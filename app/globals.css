@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Fonts */
+  --font-satoshi: var(--font-satoshi);
+  --font-cormorant: var(--font-cormorant);
+  --font-dancing-script: var(--font-dancing-script);
+
+
+  /* Colors */
+  --color-dark-green: #0A3231;
+  --color-dark-yellow: #BD8C3B;
+  --color-navy-blue: #182A4A;
+  --color-rust-orange: #AD4D27;
+  --color-wine: #77173D;
+
+  --color-light-yellow: #FFD56C;
+  --color-light-green: #1A6B4E;
+  --color-beige: #FCF8F4;
+  --color-stroke: #ECE2CB;
+}
+
+.font-satoshi {
+  font-family: var(--font-satoshi);
+}
+
+.font-cormorant {
+  font-family: var(--font-cormorant);
+}
+
+body {
+  background: var(--color-beige);
+  font-family: var(--font-satoshi), Arial, Helvetica, sans-serif;
+}
