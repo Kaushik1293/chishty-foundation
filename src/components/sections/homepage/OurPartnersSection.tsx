@@ -101,7 +101,8 @@ const OurPartnersSection = () => {
                                 viewport={{ once: true, amount: 0.3 }}
                                 whileHover={{ y: -6 }}
                                 transition={{ duration: 0.3, ease: EASE }}
-                                className="group bg-white rounded-3xl shadow-md px-6 pt-9 pb-7 min-h-70 max-w-50 flex flex-col items-center text-center"
+                                style={{boxShadow: '0px 3.38px 11px 0px #0000000F'}}
+                                className="group bg-white rounded-3xl px-6 pt-9 pb-7 min-h-70 max-w-50 flex flex-col items-center text-center"
                             >
                                 <div className="relative mb-6">
                                     <motion.div

@@ -4,6 +4,7 @@ import ServicePillarsSection from '../components/sections/homepage/ServicePillar
 import AboutusSection from '../components/sections/homepage/AboutusSection'
 import WhatWeDoSection from '../components/sections/homepage/WhatWeDoSection'
 import OurPartnersSection from '../components/sections/homepage/OurPartnersSection'
+import EventSection from '../components/sections/homepage/EventSection'
 
 const HomeContainer = () => {
     return (
@@ -17,6 +18,8 @@ const HomeContainer = () => {
             <WhatWeDoSection />
 
             <OurPartnersSection />
+
+            <EventSection/>
         </div>
     )
 }
