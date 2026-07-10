@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Swiper as SwiperType } from 'swiper';
@@ -10,25 +10,13 @@ import 'swiper/css';
 import SectionHeading from '../../common/SectionHeading';
 
 import sectionBg from '../../../assets/images/homepage/partnerssection/our-partners-bg.png';
-import partner1Image from '../../../assets/images/homepage/partnerssection/Partner-1.png';
-import partner2Image from '../../../assets/images/homepage/partnerssection/Partner-2.png';
-import partner3Image from '../../../assets/images/homepage/partnerssection/Partner-3.png';
-import partner4Image from '../../../assets/images/homepage/partnerssection/Partner-4.png';
-import partner5Image from '../../../assets/images/homepage/partnerssection/Partner-5.png';
-import partner6Image from '../../../assets/images/homepage/partnerssection/Partner-6.png';
+import { IPartner } from '@/src/types';
+import { createClient } from '@/src/utils/supabase/server';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 const DARK_GREEN = '#0A3231';
 const GOLD = '#BD8C3B';
 
-const partners = [
-    { image: partner1Image, name: 'Heartfulness\nEducation Trust' },
-    { image: partner2Image, name: 'BRICS' },
-    { image: partner3Image, name: 'The Times of\nIndia' },
-    { image: partner4Image, name: 'RSSB' },
-    { image: partner5Image, name: 'The Speaking\nTree' },
-    { image: partner6Image, name: 'Indian Minorities\nFoundation' },
-];
 
 const cardVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -49,10 +37,18 @@ const swiperBreakpoints = {
     1536: { slidesPerView: 6, spaceBetween: 28 },
 };
 
-const OurPartnersSection = () => {
+interface IOurPartnersSection {
+    partners: IPartner[]
+}
+
+const OurPartnersSection: React.FC<IOurPartnersSection> = ({partners}) => {
     const swiperRef = useRef<SwiperType | null>(null);
     const [activeIndex, setActiveIndex] = useState(0);
     const [isLocked, setIsLocked] = useState(false);
+    // const [partners, setPartners] = useState<IPartner[]>([]);
+    const [loading, setLoading] = useState(true);
+
+
 
     const syncLockState = (swiper: SwiperType) => {
         setIsLocked(swiper.isLocked);
@@ -101,7 +97,7 @@ const OurPartnersSection = () => {
                                 viewport={{ once: true, amount: 0.3 }}
                                 whileHover={{ y: -6 }}
                                 transition={{ duration: 0.3, ease: EASE }}
-                                style={{boxShadow: '0px 3.38px 11px 0px #0000000F'}}
+                                style={{ boxShadow: '0px 3.38px 11px 0px #0000000F' }}
                                 className="group bg-white rounded-3xl px-6 pt-9 pb-7 min-h-70 max-w-50 flex flex-col items-center text-center"
                             >
                                 <div className="relative mb-6">
@@ -134,10 +130,11 @@ const OurPartnersSection = () => {
                                             className="relative h-20 w-20"
                                         >
                                             <Image
-                                                src={partner.image}
+                                                src={partner.logo_url}
                                                 alt={partner.name}
                                                 fill
-                                                className="object-contain h-22 w-22"
+                                                className="object-contain"
+                                                sizes="80px"
                                             />
                                         </motion.div>
                                     </div>

@@ -6,8 +6,15 @@ import WhatWeDoSection from '../components/sections/homepage/WhatWeDoSection'
 import OurPartnersSection from '../components/sections/homepage/OurPartnersSection'
 import EventSection from '../components/sections/homepage/EventSection'
 import CTASection from '../components/sections/homepage/CTASection'
+import { getEvents, getPartners } from '@/app/(web)/action'
+import { IEvent, IPartner } from '../types'
 
-const HomeContainer = () => {
+const HomeContainer = async () => {
+
+    const partners = await getPartners() as IPartner[];
+
+    const events = await getEvents() as IEvent[];
+
     return (
         <div>
             <HeroBanner />
@@ -18,11 +25,11 @@ const HomeContainer = () => {
 
             <WhatWeDoSection />
 
-            <OurPartnersSection />
+            <OurPartnersSection partners={partners} />
 
-            <EventSection/>
+            <EventSection events={events} />
 
-            <CTASection/>
+            <CTASection />
         </div>
     )
 }

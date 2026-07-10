@@ -4,18 +4,15 @@ import greenDivider from '../../../assets/images/homepage/vectors/common/green-d
 import star from '../../../assets/images/homepage/vectors/common/faded-star.svg'
 
 import chandelier from '../../../assets/images/homepage/eventsection/chandelier.png'
-import event1Img from '../../../assets/images/homepage/eventsection/event-1.png'
-import event2Img from '../../../assets/images/homepage/eventsection/event-2.png'
-import event3Img from '../../../assets/images/homepage/eventsection/event-3.png'
-import event4Img from '../../../assets/images/homepage/eventsection/event-4.png'
-
-import food from '../../../assets/images/homepage/eventsection/food.svg'
-import ramadan from '../../../assets/images/homepage/eventsection/iftari.svg'
-import music from '../../../assets/images/homepage/eventsection/music.svg'
-import urs from '../../../assets/images/homepage/eventsection/urs.svg'
+import moment from "moment";
 
 import SectionHeading from '../../common/SectionHeading'
 import PrimaryButton from '../../common/PrimaryButton'
+import { IEvent } from '@/src/types'
+
+interface IEventSection {
+  events: IEvent[]
+}
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 40 },
@@ -25,41 +22,6 @@ const fadeUp: Variants = {
     transition: { duration: 0.7, ease: 'easeOut', delay: i * 0.12 },
   }),
 }
-
-const events = [
-  {
-    date: 'FEB 2026',
-    image: event1Img,
-    icon: food,
-    iconBg: 'bg-dark-green',
-    title: 'Langar & Food Distribution',
-    desc: 'Community Support & Relief Initiatives dedicated to serving those in need with compassion, care, and humanity.',
-  },
-  {
-    date: 'APR 2026',
-    image: event2Img,
-    icon: ramadan,
-    iconBg: 'bg-dark-yellow',
-    title: 'Ramadan Iftari Distribution',
-    desc: 'Ramadan Iftari Distribution initiative focused on sharing meals, compassion, and support with communities during the holy month of Ramadan.',
-  },
-  {
-    date: 'SEP 2025',
-    image: event3Img,
-    icon: music,
-    iconBg: 'bg-dark-green',
-    title: 'International Sufi Rang Festival',
-    desc: 'The International Sufi Rang Festival celebrated the spirit of Sufism through soulful music, cultural performances, and a message of peace & love.',
-  },
-  {
-    date: 'JAN 2026',
-    image: event4Img,
-    icon: urs,
-    iconBg: 'bg-dark-yellow',
-    title: 'URS Gharib Nawaz (R)',
-    desc: 'The Urs of Khwaja Gharib Nawaz (R.A.) brought devotees together in a spiritual gathering filled with prayers, devotion, and the message of …',
-  },
-]
 
 const CalendarIcon = () => (
   <svg width="11" height="12" viewBox="0 0 11 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -73,7 +35,7 @@ const ArrowIcon = ({ color = 'white' }: { color?: string }) => (
   </svg>
 )
 
-const EventSection = () => {
+const EventSection: React.FC<IEventSection> = ({ events }) => {
   return (
     <section className="relative pb-25 bg-white overflow-hidden">
 
@@ -186,7 +148,7 @@ const EventSection = () => {
 
               <div className="relative h-52 overflow-hidden">
                 <motion.img
-                  src={event.image.src}
+                  src={event.banner_image}
                   alt={event.title}
                   className="w-full h-full object-cover"
                   whileHover={{ scale: 1.08 }}
@@ -194,11 +156,8 @@ const EventSection = () => {
                 />
                 <span className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/60 backdrop-blur-lg text-dark-green text-xs font-semibold px-3 py-1.5 rounded-full">
                   <CalendarIcon />
-                  {event.date}
+                  {event.event_date && moment(event.event_date).format("MMM YYYY").toUpperCase()}
                 </span>
-
-
-
               </div>
 
 
@@ -206,9 +165,10 @@ const EventSection = () => {
                 <motion.div
                   whileHover={{ rotate: 8, scale: 1.08 }}
                   transition={{ duration: 0.4, ease: 'easeOut' }}
-                  className={`absolute -top-10 left-5 w-18 h-18 rounded-full flex items-center justify-center border-4 border-[#FDFBF8] ${event.iconBg}`}
+                  className={`absolute -top-10 left-5 w-18 h-18 rounded-full flex items-center justify-center border-4 border-[#FDFBF8] ${i % 2 === 0 ? "bg-dark-green" : "bg-dark-yellow"
+                    }`}
                 >
-                  <img src={event.icon.src} alt="" className="w-8 h-8" />
+                  <img src={event.icon} alt="" className="w-8 h-8" />
                 </motion.div>
 
                 <h3 className="font-bold font-cormorant text-2xl text-dark-green mb-3">
@@ -220,11 +180,11 @@ const EventSection = () => {
                   <span className="h-px w-14 bg-linear-to-r from-dark-yellow to-transparent" />
                 </div>
                 <p className="text-sm text-gray-600 leading-relaxed mb-5 min-h-18">
-                  {event.desc}
+                  {event.short_description}
                 </p>
 
                 <a
-                  href="#"
+                  href={`/events/${event.slug}`}
                   className="group inline-flex items-center gap-3 text-sm font-semibold text-dark-yellow transition-all duration-300 hover:gap-4"
                 >
                   <span>Learn More</span>
