@@ -184,7 +184,8 @@ const EventSection: React.FC<IEventSection> = ({ events }) => {
                 </p>
 
                 <a
-                  href={`/events/${event.slug}`}
+                  // href={`/events/${event.slug}`}
+                  href='#'
                   className="group inline-flex items-center gap-3 text-sm font-semibold text-dark-yellow transition-all duration-300 hover:gap-4"
                 >
                   <span>Learn More</span>
