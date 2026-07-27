@@ -4,7 +4,7 @@ import React, { ReactNode } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import greenStar from '../../assets/images/homepage/vectors/common/green-star.svg';
-import whiteStar from '../../assets/images/homepage/vectors/common/green-star.svg';
+import whiteStar from '../../assets/images/homepage/vectors/common/white-star.svg';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -26,6 +26,8 @@ type SectionHeadingProps = {
     className?: string;
     maxWidth?: string;
     titleNoWrap?: boolean;
+
+    hideDivider?: boolean;
 };
 
 const containerVariants = {
@@ -73,7 +75,7 @@ const starSpin = {
 const SectionHeading = ({
     eyebrow = 'WHAT WE FOCUS ON',
     title = 'Our Service Pillars',
-    description = 'Guided by compassion and rooted in service, we work across key areas to uplift lives and build a better world.',
+    description = '',
 
     eyebrowColor = '#0A3231',
     titleColor = '#0A3231',
@@ -86,6 +88,7 @@ const SectionHeading = ({
     className = '',
     maxWidth = 'max-w-2xl',
     titleNoWrap = false,
+    hideDivider
 }: SectionHeadingProps) => {
     const starIcon = starColor === 'white' ? whiteStar : starColor === 'green' ? greenStar : greenStar;
 
@@ -148,29 +151,32 @@ const SectionHeading = ({
             </motion.h2>
 
 
-            <motion.div
-                variants={fadeUp}
-                className="flex items-center justify-center gap-3 sm:gap-4 mb-4 sm:mb-6 w-full max-w-55 sm:max-w-xs"
-            >
-                <motion.span
-                    variants={lineExpandLeft}
-                    style={{ originX: 1, backgroundColor: lineColor }}
-                    className="h-px flex-1"
-                />
-                <motion.div variants={starSpin} className="shrink-0">
+            {
+                hideDivider == true ? <></> :
                     <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 12, repeat: Infinity, ease: 'linear', delay: 1.2 }}
+                        variants={fadeUp}
+                        className="flex items-center justify-center gap-3 sm:gap-4 mb-4 sm:mb-6 w-full max-w-55 sm:max-w-xs"
                     >
-                        <Image src={starIcon} alt="" width={18} height={18} className="w-8 h-8 sm:w-5 sm:h-5" />
+                        <motion.span
+                            variants={lineExpandLeft}
+                            style={{ originX: 1, backgroundColor: lineColor }}
+                            className="h-px flex-1"
+                        />
+                        <motion.div variants={starSpin} className="shrink-0">
+                            <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 12, repeat: Infinity, ease: 'linear', delay: 1.2 }}
+                            >
+                                <Image src={starIcon} alt="" width={18} height={18} className="w-8 h-8 sm:w-5 sm:h-5" />
+                            </motion.div>
+                        </motion.div>
+                        <motion.span
+                            variants={lineExpandRight}
+                            style={{ originX: 0, backgroundColor: lineColor }}
+                            className="h-px flex-1"
+                        />
                     </motion.div>
-                </motion.div>
-                <motion.span
-                    variants={lineExpandRight}
-                    style={{ originX: 0, backgroundColor: lineColor }}
-                    className="h-px flex-1"
-                />
-            </motion.div>
+            }
 
 
             {description &&

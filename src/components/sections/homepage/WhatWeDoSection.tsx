@@ -125,46 +125,6 @@ const WhatWeDoSection = () => {
                                 </motion.svg>
                             </motion.span>
                         </motion.a>
-
-                        <motion.div
-                            initial="hidden"
-                            whileInView="show"
-                            viewport={{ once: true, amount: 0.3 }}
-                            className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-16"
-                        >
-                            {featureCards.map((card, i) => (
-                                <motion.div
-                                    key={card.title}
-                                    variants={fadeUp}
-                                    custom={i}
-                                    whileHover={{
-                                        y: -8,
-                                        boxShadow: '0 20px 35px -12px rgba(178,139,63,0.25)',
-                                    }}
-                                    transition={{ duration: 0.4, ease: 'easeOut' }}
-                                    className="bg-white/60 rounded-2xl p-6 cursor-pointer border border-[#F1E3D7]"
-                                >
-                                    <motion.div
-                                        whileHover={{ rotate: 8, scale: 1.08 }}
-                                        transition={{ duration: 0.4, ease: 'easeOut' }}
-                                        className={`w-18 h-18 rounded-full flex items-center justify-center mb-5 ${card.iconBg}`}
-                                    >
-                                        <img src={card.icon.src} alt={card.title} className="w-8 h-8" />
-                                    </motion.div>
-                                    <h3 className="font-semibold text-xl text-dark-green mb-3">
-                                        {card.title}
-                                    </h3>
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <span className="h-px w-8 bg-dark-yellow/60" />
-                                        <span className="w-3 h-3 rotate-45 border-dark-yellow border" />
-                                        <span className="h-px w-8 bg-dark-yellow/60" />
-                                    </div>
-                                    <p className="text-sm text-gray-600 leading-relaxed">
-                                        {card.desc}
-                                    </p>
-                                </motion.div>
-                            ))}
-                        </motion.div>
                     </motion.div>
 
 
@@ -194,6 +154,48 @@ const WhatWeDoSection = () => {
                             />
 
                         </motion.div>
+                    </motion.div>
+
+                </div>
+                <div>
+                    <motion.div
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true, amount: 0.3 }}
+                        className="grid grid-cols-1 sm:grid-cols-5 gap-6 mt-16"
+                    >
+                        {featureCards.map((card, i) => (
+                            <motion.div
+                                key={card.title}
+                                variants={fadeUp}
+                                custom={i}
+                                whileHover={{
+                                    y: -8,
+                                    boxShadow: '0 20px 35px -12px rgba(178,139,63,0.25)',
+                                }}
+                                transition={{ duration: 0.4, ease: 'easeOut' }}
+                                className="bg-white/60 rounded-2xl p-6 cursor-pointer border border-[#F1E3D7]"
+                            >
+                                <motion.div
+                                    whileHover={{ rotate: 8, scale: 1.08 }}
+                                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                                    className={`w-18 h-18 rounded-full flex items-center justify-center mb-5 ${card.iconBg}`}
+                                >
+                                    <img src={card.icon.src} alt={card.title} className="w-8 h-8" />
+                                </motion.div>
+                                <h3 className="font-semibold text-xl text-dark-green mb-3">
+                                    {card.title}
+                                </h3>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className="h-px w-8 bg-dark-yellow/60" />
+                                    <span className="w-3 h-3 rotate-45 border-dark-yellow border" />
+                                    <span className="h-px w-8 bg-dark-yellow/60" />
+                                </div>
+                                <p className="text-sm text-gray-600 leading-relaxed">
+                                    {card.desc}
+                                </p>
+                            </motion.div>
+                        ))}
                     </motion.div>
                 </div>
 
