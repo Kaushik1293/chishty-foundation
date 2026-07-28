@@ -101,7 +101,7 @@ const EventSection: React.FC<IEventSection> = ({ events }) => {
             }}
             className='flex items-center justify-center'
           >
-            <img src={star.src} alt="star" />
+            <img src={star.src} alt="star" className='hidden md:visible' />
           </motion.div>
 
 
@@ -110,16 +110,16 @@ const EventSection: React.FC<IEventSection> = ({ events }) => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.9, ease: 'easeOut' }}
-            className="flex flex-col items-center gap-6"
+            className="flex flex-col items-center gap-6 justify-end"
           >
             <motion.img
               src={chandelier.src}
               alt="Decorative chandelier"
               animate={{ rotate: [-2, 2, -2] }}
               transition={{ duration: 5, ease: 'easeInOut', repeat: Infinity }}
-              className="w-40 h-auto origin-top select-none"
+              className="w-40 h-auto origin-top select-none hidden md:visible"
             />
-            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+            <motion.div className='self-baseline' whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
               <PrimaryButton text="Explore All Events" icon={<ArrowIcon />} />
             </motion.div>
           </motion.div>

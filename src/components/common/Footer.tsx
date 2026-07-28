@@ -129,7 +129,14 @@ const contactDetails: { icon: ImgSrc; text: string }[] = [
     { icon: web, text: 'www.humanityfirst.org' },
 ]
 
+import { usePathname } from 'next/navigation'
+
 const Footer = () => {
+    const pathname = usePathname()
+    const isAsgardRoute = pathname?.startsWith('/asgard') || pathname?.startsWith('/login') || pathname?.startsWith('/events') || pathname?.startsWith('/partners')
+
+    if (isAsgardRoute) return null
+
     return (
         <footer className="bg-[#012F2B]">
             <div className="container mx-auto px-5 md:px-0 py-16">

@@ -103,7 +103,7 @@ const WhyGetInvolved = () => {
                             whileHover="hover"
                             initial="rest"
                             animate="rest"
-                            className="group relative overflow-hidden rounded-[1.75rem] bg-white border border-[#F1E1D2] px-7 pt-8 pb-9 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.05)] transition-shadow duration-500 hover:shadow-[0_18px_40px_-12px_rgba(189,140,59,0.25)]"
+                            className="group relative overflow-hidden rounded-[1.75rem] bg-white border border-[#F1E3D7] px-7 pt-8 pb-9 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.05)] transition-shadow duration-500 hover:shadow-[0_18px_40px_-12px_rgba(189,140,59,0.25)]"
                         >
                             
                             <motion.div

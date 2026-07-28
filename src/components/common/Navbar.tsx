@@ -502,6 +502,9 @@ const Navbar = () => {
     const [activeLang, setActiveLang] = useState(languages[0]);
 
     const isHome = pathname === "/";
+    const isAsgardRoute = pathname.startsWith("/asgard") || pathname.startsWith("/login") || pathname.startsWith("/events") || pathname.startsWith("/partners");
+
+    if (isAsgardRoute) return null;
 
     const isItemActive = (item: NavItem) => {
         if (item.href.startsWith("/")) {
