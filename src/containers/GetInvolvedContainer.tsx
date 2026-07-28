@@ -5,7 +5,7 @@ import EventSection from '../components/sections/homepage/EventSection'
 import { IEvent } from '../types'
 import { getEvents } from '@/app/(web)/action'
 import AboutCTASection from '../components/about/AboutCTASection'
-import WaysToGetInvolved from '../components/getInvolved/WaysToGetInvolved'
+import WaysGetInvolvedSection from '../components/getInvolved/WaysGetInvolvedSection'
 
 const GetInvolvedContainer = async () => {
 
@@ -17,7 +17,7 @@ const GetInvolvedContainer = async () => {
 
       <WhyGetInvolved />
 
-      <WaysToGetInvolved/>
+      <WaysGetInvolvedSection/>
 
       <EventSection events={events} />
 
