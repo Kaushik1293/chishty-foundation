@@ -440,7 +440,7 @@
 //                                     className="pt-6 flex flex-col gap-4"
 //                                 >
 //                                     <PrimaryButton text={"Donate Now"}
-//                                         containerClassName="!bg-[#BD8C3B]"
+//                                         containerClassName="!bg-dark-yellow"
 //                                         iconWrapperClassName="!bg-white"
 //                                         icon={
 //                                             <svg width="20" height="19" viewBox="0 0 20 19" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -502,7 +502,7 @@ const Navbar = () => {
     const [activeLang, setActiveLang] = useState(languages[0]);
 
     const isHome = pathname === "/";
-    const isAsgardRoute = pathname.startsWith("/asgard") || pathname.startsWith("/login") || pathname.startsWith("/events") || pathname.startsWith("/partners");
+    const isAsgardRoute = pathname.startsWith("/asgard") || pathname.startsWith("/login") || pathname.startsWith("/events") || pathname.startsWith("/asgard/partners");
 
     if (isAsgardRoute) return null;
 
@@ -811,7 +811,7 @@ const Navbar = () => {
                                     className="pt-6 flex flex-col gap-4"
                                 >
                                     <PrimaryButton text={"Donate Now"}
-                                        containerClassName="!bg-[#BD8C3B]"
+                                        containerClassName="!bg-dark-yellow"
                                         iconWrapperClassName="!bg-white"
                                         icon={
                                             <svg width="20" height="19" viewBox="0 0 20 19" fill="none" xmlns="http://www.w3.org/2000/svg">

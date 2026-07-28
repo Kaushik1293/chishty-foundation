@@ -216,7 +216,7 @@ const AboutCTASection = () => {
                         >
                             <PrimaryButton
                                 containerClassName="!bg-[#EEAE46] shadow-md hover:shadow-xl transition-shadow duration-300"
-                                iconWrapperClassName="!bg-[#0A3231]"
+                                iconWrapperClassName="!bg-dark-green"
                                 text="Get Involved Today"
                                 icon={<ArrowIcon />}
                             />

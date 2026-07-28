@@ -133,7 +133,7 @@ import { usePathname } from 'next/navigation'
 
 const Footer = () => {
     const pathname = usePathname()
-    const isAsgardRoute = pathname?.startsWith('/asgard') || pathname?.startsWith('/login') || pathname?.startsWith('/events') || pathname?.startsWith('/partners')
+    const isAsgardRoute = pathname?.startsWith('/asgard') || pathname?.startsWith('/login') || pathname?.startsWith('/events') || pathname?.startsWith('/asgard/partners')
 
     if (isAsgardRoute) return null
 

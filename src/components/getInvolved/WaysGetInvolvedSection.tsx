@@ -11,8 +11,8 @@ import volunteerIcon from '../../assets/images/getinvolvedpage/way-to/volunteer.
 import volunteerImg from '../../assets/images/getinvolvedpage/way-to/volunteer-img.png';
 import spreadWordIcon from '../../assets/images/getinvolvedpage/way-to/spread-word.svg';
 import spreadWordImg from '../../assets/images/getinvolvedpage/way-to/spread-word-img.png';
-import partnerIcon from '../../assets/images/getinvolvedpage/way-to/partner.svg';
-import partnerImg from '../../assets/images/getinvolvedpage/way-to/partner-img.png';
+import partnerIcon from '../../assets/images/getinvolvedpage/way-to/asgard/partner.svg';
+import partnerImg from '../../assets/images/getinvolvedpage/way-to/asgard/partner-img.png';
 import SectionHeading from '../common/SectionHeading';
 
 const DARK_GREEN = '#0A3231';
