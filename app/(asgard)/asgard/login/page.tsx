@@ -44,7 +44,7 @@ export default function AdminLoginPage() {
       setIsLoading(false);
       setSuccessMsg("Authentication successful! Redirecting to Asgard CMS...");
       setTimeout(() => {
-        router.push("/events");
+        router.push("/asgard/dashboard");
       }, 700);
     }, 900);
   };
