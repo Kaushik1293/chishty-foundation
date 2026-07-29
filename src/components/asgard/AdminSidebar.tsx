@@ -7,12 +7,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LayoutDashboard, Calendar, Users, ExternalLink, ChevronLeft, ChevronRight, LogOut, Sparkles, ShieldCheck, Menu, X, } from "lucide-react";
 
 import whiteLogo from "../../assets/images/homepage/white-logo.png";
-import star from "../../assets/images/homepage/vectors/common/gold-star.svg";
+import star from "../../assets/images/logo-icon.png";
 
 interface AdminSidebarProps {
   isMobileOpen?: boolean;
   onMobileClose?: () => void;
 }
+
+import { createClient } from "@/src/utils/supabase/client";
+import { useEffect } from "react";
 
 export default function AdminSidebar({
   isMobileOpen = false,
@@ -21,6 +24,21 @@ export default function AdminSidebar({
   const pathname = usePathname();
   const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>("admin@chishty.org");
+  const [userName, setUserName] = useState<string>("Administrator");
+
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function getUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserEmail(user.email || null);
+        setUserName(user.user_metadata?.full_name || user.email?.split("@")[0] || "Administrator");
+      }
+    }
+    getUser();
+  }, []);
 
   const navItems = [
     {
@@ -43,9 +61,10 @@ export default function AdminSidebar({
     },
   ];
 
-  const handleLogout = () => {
-    // Simulated logout action
-    router.push("/login");
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/asgard/login");
+    router.refresh();
   };
 
   const isCurrentActive = (href: string) => {
@@ -64,13 +83,11 @@ export default function AdminSidebar({
             href="/asgard"
             className="flex items-center gap-3 overflow-hidden group"
           >
-            <div className="relative w-10 h-10 rounded-xl bg-linear-to-br from-dark-yellow to-rust-orange p-0.5 shadow-lg shrink-0 flex items-center justify-center">
+            <div className="relative w-10 h-10 rounded-xl bg-white p-0.5 shadow-lg shrink-0 flex items-center justify-center">
               <motion.img
-                src={star.src || star}
+                src={star.src}
                 alt="Chishty Logo"
                 className="w-6 h-6 object-contain"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
               />
             </div>
 
@@ -82,14 +99,14 @@ export default function AdminSidebar({
                 className="flex flex-col"
               >
                 <div className="flex items-center gap-1.5">
-                  <span className="font-cormorant font-bold text-xl tracking-wider text-light-yellow">
-                    ASGARD
+                  <span className="font-satoshi font-bold text-xl tracking-wider text-light-yellow">
+                    ADMIN
                   </span>
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-dark-yellow/30 text-light-yellow font-mono border border-dark-yellow/40">
                     CMS
                   </span>
                 </div>
-                <span className="text-[11px] text-white/60 font-satoshi">
+                <span className="text-white text-sm font-satoshi">
                   Chishty Foundation
                 </span>
               </motion.div>
@@ -128,8 +145,8 @@ export default function AdminSidebar({
                 href={item.href}
                 onClick={onMobileClose}
                 className={`relative flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group font-satoshi text-sm font-medium ${active
-                    ? "text-light-yellow font-semibold"
-                    : "text-white/70 hover:text-white hover:bg-white/5"
+                  ? "text-light-yellow font-semibold"
+                  : "text-white/70 hover:text-white hover:bg-white/5"
                   }`}
               >
                 {/* Active Indicator Backdrop */}
@@ -143,8 +160,8 @@ export default function AdminSidebar({
 
                 <div
                   className={`relative z-10 p-2 rounded-lg transition-colors ${active
-                      ? "bg-dark-yellow text-dark-green"
-                      : "bg-white/5 text-white/80 group-hover:bg-white/10 group-hover:text-white"
+                    ? "bg-dark-yellow text-dark-green"
+                    : "bg-white/5 text-white/80 group-hover:bg-white/10 group-hover:text-white"
                     }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -156,8 +173,8 @@ export default function AdminSidebar({
                     {item.badge && (
                       <span
                         className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-medium ${active
-                            ? "bg-dark-yellow text-dark-green"
-                            : "bg-white/10 text-white/60 group-hover:text-white"
+                          ? "bg-dark-yellow text-dark-green"
+                          : "bg-white/10 text-white/60 group-hover:text-white"
                           }`}
                       >
                         {item.badge}
@@ -201,19 +218,19 @@ export default function AdminSidebar({
             }`}
         >
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-8 h-8 rounded-full bg-linear-to-tr from-dark-yellow to-light-yellow text-dark-green font-bold text-xs flex items-center justify-center shrink-0 border border-white/20">
-              AD
+            <div className="w-8 h-8 rounded-full bg-linear-to-tr from-dark-yellow to-light-yellow text-dark-green font-bold text-xs flex items-center justify-center shrink-0 border border-white/20 uppercase">
+              {userName.slice(0, 2)}
             </div>
             {!isCollapsed && (
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center gap-1">
                   <span className="text-xs font-semibold text-white truncate">
-                    Administrator
+                    {userName}
                   </span>
                   <ShieldCheck className="w-3 h-3 text-light-yellow shrink-0" />
                 </div>
                 <span className="text-[10px] text-white/50 truncate">
-                  admin@chishty.org
+                  {userEmail}
                 </span>
               </div>
             )}

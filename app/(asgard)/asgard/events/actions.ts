@@ -1,14 +1,9 @@
 "use server";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/src/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-);
-
-export interface Event {
+export interface EventRecord {
   id?: number;
   is_featured: boolean;
   title: string | null;
@@ -23,27 +18,8 @@ export interface Event {
   updated_at?: string | null;
 }
 
-// -------------------------------------------------------------
-// PARTNERS
-// -------------------------------------------------------------
-export async function getPartners() {
-  const { data, error } = await supabase
-    .from("partners")
-    .select("*")
-    .eq("is_active", true)
-    .order("display_order");
-
-  if (error) throw error;
-
-  return data ?? [];
-}
-
-// -------------------------------------------------------------
-// EVENTS CRUD (SUPABASE)
-// -------------------------------------------------------------
-
 /**
- * Helper: Generate slug from text
+ * Generate a URL-friendly slug from title
  */
 function slugify(text: string): string {
   return text
@@ -56,25 +32,27 @@ function slugify(text: string): string {
 }
 
 /**
- * READ: Get all events (with optional filtering)
+ * READ: Fetch all events with optional filters (Search, Active, Featured)
  */
-export async function getEvents(filters?: {
+export async function getEvents(options?: {
   search?: string;
   isActiveOnly?: boolean;
   isFeaturedOnly?: boolean;
 }) {
+  const supabase = await createClient();
+
   let query = supabase.from("events").select("*").order("created_at", { ascending: false });
 
-  if (filters?.isActiveOnly) {
+  if (options?.isActiveOnly) {
     query = query.eq("is_active", true);
   }
 
-  if (filters?.isFeaturedOnly) {
+  if (options?.isFeaturedOnly) {
     query = query.eq("is_featured", true);
   }
 
-  if (filters?.search && filters.search.trim() !== "") {
-    const term = `%${filters.search.trim()}%`;
+  if (options?.search && options.search.trim() !== "") {
+    const term = `%${options.search.trim()}%`;
     query = query.or(`title.ilike.${term},short_description.ilike.${term},description.ilike.${term}`);
   }
 
@@ -82,16 +60,18 @@ export async function getEvents(filters?: {
 
   if (error) {
     console.error("Error fetching events:", error);
-    throw error;
+    throw new Error(error.message);
   }
 
-  return (data as Event[]) ?? [];
+  return (data as EventRecord[]) ?? [];
 }
 
 /**
- * READ: Get single event by ID
+ * READ: Fetch single event by ID
  */
 export async function getEventById(id: number) {
+  const supabase = await createClient();
+
   const { data, error } = await supabase
     .from("events")
     .select("*")
@@ -100,16 +80,18 @@ export async function getEventById(id: number) {
 
   if (error) {
     console.error(`Error fetching event ${id}:`, error);
-    throw error;
+    throw new Error(error.message);
   }
 
-  return data as Event;
+  return data as EventRecord;
 }
 
 /**
- * READ: Get single event by Slug
+ * READ: Fetch single event by slug
  */
 export async function getEventBySlug(slug: string) {
+  const supabase = await createClient();
+
   const { data, error } = await supabase
     .from("events")
     .select("*")
@@ -121,35 +103,37 @@ export async function getEventBySlug(slug: string) {
     return null;
   }
 
-  return data as Event;
+  return data as EventRecord;
 }
 
 /**
- * CREATE: Add new event
+ * CREATE: Add a new event to Supabase
  */
-export async function createEvent(eventData: Omit<Event, "id" | "created_at" | "updated_at">) {
-  const slug = eventData.slug && eventData.slug.trim() !== ""
-    ? slugify(eventData.slug)
-    : eventData.title
-    ? slugify(eventData.title)
-    : `event-${Date.now()}`;
+export async function createEvent(payload: Omit<EventRecord, "id" | "created_at" | "updated_at">) {
+  const supabase = await createClient();
 
-  const payload = {
-    is_featured: eventData.is_featured ?? false,
-    title: eventData.title || null,
-    slug,
-    short_description: eventData.short_description || null,
-    description: eventData.description || null,
-    banner_image: eventData.banner_image || null,
-    icon: eventData.icon || null,
-    event_date: eventData.event_date || null,
-    is_active: eventData.is_active ?? true,
+  const generatedSlug = payload.slug && payload.slug.trim() !== ""
+    ? slugify(payload.slug)
+    : payload.title
+      ? slugify(payload.title)
+      : `event-${Date.now()}`;
+
+  const newRecord = {
+    is_featured: payload.is_featured ?? false,
+    title: payload.title || null,
+    slug: generatedSlug,
+    short_description: payload.short_description || null,
+    description: payload.description || null,
+    banner_image: payload.banner_image || null,
+    icon: payload.icon || null,
+    event_date: payload.event_date || null,
+    is_active: payload.is_active ?? true,
     updated_at: new Date().toISOString(),
   };
 
   const { data, error } = await supabase
     .from("events")
-    .insert([payload])
+    .insert([newRecord])
     .select()
     .single();
 
@@ -160,27 +144,29 @@ export async function createEvent(eventData: Omit<Event, "id" | "created_at" | "
 
   revalidatePath("/asgard/events");
   revalidatePath("/events");
-  return { success: true, data: data as Event };
+  return { success: true, data: data as EventRecord };
 }
 
 /**
- * UPDATE: Update an existing event by ID
+ * UPDATE: Edit existing event in Supabase
  */
-export async function updateEvent(id: number, eventData: Partial<Omit<Event, "id" | "created_at">>) {
-  const payload: Record<string, any> = {
-    ...eventData,
+export async function updateEvent(id: number, payload: Partial<Omit<EventRecord, "id" | "created_at">>) {
+  const supabase = await createClient();
+
+  const updatedFields: Record<string, any> = {
+    ...payload,
     updated_at: new Date().toISOString(),
   };
 
-  if (eventData.title && (!eventData.slug || eventData.slug.trim() === "")) {
-    payload.slug = slugify(eventData.title);
-  } else if (eventData.slug) {
-    payload.slug = slugify(eventData.slug);
+  if (payload.title && (!payload.slug || payload.slug.trim() === "")) {
+    updatedFields.slug = slugify(payload.title);
+  } else if (payload.slug) {
+    updatedFields.slug = slugify(payload.slug);
   }
 
   const { data, error } = await supabase
     .from("events")
-    .update(payload)
+    .update(updatedFields)
     .eq("id", id)
     .select()
     .single();
@@ -192,27 +178,29 @@ export async function updateEvent(id: number, eventData: Partial<Omit<Event, "id
 
   revalidatePath("/asgard/events");
   revalidatePath("/events");
-  return { success: true, data: data as Event };
+  return { success: true, data: data as EventRecord };
 }
 
 /**
- * QUICK TOGGLE: Toggle active status
+ * QUICK TOGGLE: Toggle active status (is_active)
  */
 export async function toggleEventActiveStatus(id: number, currentStatus: boolean | null) {
   return updateEvent(id, { is_active: !currentStatus });
 }
 
 /**
- * QUICK TOGGLE: Toggle featured status
+ * QUICK TOGGLE: Toggle featured status (is_featured)
  */
 export async function toggleEventFeaturedStatus(id: number, currentStatus: boolean) {
   return updateEvent(id, { is_featured: !currentStatus });
 }
 
 /**
- * DELETE: Delete event by ID
+ * DELETE: Remove an event by ID
  */
 export async function deleteEvent(id: number) {
+  const supabase = await createClient();
+
   const { error } = await supabase
     .from("events")
     .delete()
