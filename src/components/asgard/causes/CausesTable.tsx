@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Image as ImageIcon, Edit, Trash2, Eye, Loader2, ArrowUpDown } from "lucide-react";
+import { Image as ImageIcon, Edit, Trash2, Eye, Loader2, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { CauseRecord } from "@/app/(asgard)/asgard/causes/actions";
 
 interface CausesTableProps {
@@ -23,15 +23,15 @@ export default function CausesTable({
   handleOpenDelete,
 }: CausesTableProps) {
   return (
-    <div className="bg-white border border-stroke rounded-2xl shadow-sm overflow-hidden">
+    <div className="bg-white border border-stroke rounded-2xl shadow-sm overflow-hidden font-satoshi">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-beige border-b border-stroke text-[11px] font-semibold text-dark-green/70 uppercase tracking-wider">
               <th className="py-3.5 px-4">Image & Description</th>
-              <th className="py-3.5 px-4 w-28 text-center">Display Order</th>
-              <th className="py-3.5 px-4 w-32">Status</th>
-              <th className="py-3.5 px-4 w-32 text-right">Actions</th>
+              <th className="py-3.5 px-4">Display Order</th>
+              <th className="py-3.5 px-4">Status</th>
+              <th className="py-3.5 px-4 text-right">Actions</th>
             </tr>
           </thead>
 
@@ -81,10 +81,10 @@ export default function CausesTable({
                   </td>
 
                   {/* Display Order */}
-                  <td className="py-4 px-4 whitespace-nowrap font-mono text-xs text-dark-green text-center">
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-dark-green/5 border border-stroke">
-                      <ArrowUpDown className="w-3.5 h-3.5 text-dark-yellow" />
-                      <span className="font-bold">{cause.display_order ?? 0}</span>
+                  <td className="py-4 px-4 whitespace-nowrap font-mono text-xs text-dark-green">
+                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-dark-green/5 border border-stroke">
+                      <ArrowUpDown className="w-3 h-3 text-dark-yellow" />
+                      <span>{cause.display_order ?? 0}</span>
                     </div>
                   </td>
 
@@ -109,21 +109,21 @@ export default function CausesTable({
                     <div className="flex items-center justify-end gap-1.5">
                       <button
                         onClick={() => handleOpenDetail(cause)}
-                        className="p-1.5 rounded-lg text-dark-green/70 hover:text-dark-green hover:bg-dark-green/10 transition-colors"
+                        className="p-1.5 rounded-lg text-dark-green/70 hover:text-dark-green hover:bg-dark-green/10 transition-colors cursor-pointer"
                         title="View Details"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleOpenEdit(cause)}
-                        className="p-1.5 rounded-lg text-dark-yellow hover:bg-dark-yellow/10 transition-colors"
+                        className="p-1.5 rounded-lg text-dark-yellow hover:bg-dark-yellow/10 transition-colors cursor-pointer"
                         title="Edit Cause"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleOpenDelete(cause)}
-                        className="p-1.5 rounded-lg text-red-500/70 hover:text-red-600 hover:bg-red-500/10 transition-colors"
+                        className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                         title="Delete Cause"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -142,6 +142,29 @@ export default function CausesTable({
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Footer Pagination Bar */}
+      <div className="p-4 bg-beige border-t border-stroke flex items-center justify-between text-xs text-dark-green/70">
+        <span>
+          Showing <strong>{filteredCauses.length}</strong> of{" "}
+          <strong>{causes.length}</strong> causes
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            disabled
+            className="p-1.5 rounded-lg border border-stroke bg-white opacity-50 cursor-not-allowed"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <span className="px-2 font-semibold">Page 1 of 1</span>
+          <button
+            disabled
+            className="p-1.5 rounded-lg border border-stroke bg-white opacity-50 cursor-not-allowed"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

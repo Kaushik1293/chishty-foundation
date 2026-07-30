@@ -32,3 +32,24 @@ body {
   background: var(--color-beige);
   font-family: var(--font-satoshi), Arial, Helvetica, sans-serif;
 }
+
+/* Ensure all clickable elements display pointer cursor */
+button,
+a,
+[role="button"],
+input[type="submit"],
+input[type="button"],
+input[type="reset"],
+input[type="checkbox"],
+input[type="radio"],
+select,
+summary {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}

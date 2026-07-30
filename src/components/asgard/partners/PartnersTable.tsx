@@ -125,21 +125,21 @@ export default function PartnersTable({
                     <div className="flex items-center justify-end gap-1.5">
                       <button
                         onClick={() => handleOpenDetail(ptr)}
-                        className="p-1.5 rounded-lg text-dark-green/70 hover:text-dark-green hover:bg-dark-green/10 transition-colors"
+                        className="p-1.5 rounded-lg text-dark-green/70 hover:text-dark-green hover:bg-dark-green/10 transition-colors cursor-pointer"
                         title="View Details"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleOpenEdit(ptr)}
-                        className="p-1.5 rounded-lg text-dark-yellow hover:bg-dark-yellow/10 transition-colors"
+                        className="p-1.5 rounded-lg text-dark-yellow hover:bg-dark-yellow/10 transition-colors cursor-pointer"
                         title="Edit Partner"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleOpenDelete(ptr)}
-                        className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                        className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                         title="Delete Partner"
                       >
                         <Trash2 className="w-4 h-4" />

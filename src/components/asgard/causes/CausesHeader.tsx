@@ -1,6 +1,7 @@
 import React from "react";
 import { Plus, Search, Filter, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
+import AsgardSelect from "../AsgardSelect";
 
 interface CausesHeaderProps {
   causesCount: number;
@@ -99,34 +100,25 @@ export default function CausesHeader({
           <Search className="w-4 h-4 text-dark-green/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search causes by description..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-stroke rounded-xl text-sm font-satoshi text-dark-green placeholder:text-dark-green/40 focus:outline-none focus:ring-2 focus:ring-dark-yellow/20 focus:border-dark-yellow/40 transition-all"
+            placeholder="Search causes by description..."
+            className="w-full pl-10 pr-4 py-2 bg-beige border border-stroke rounded-xl text-xs text-dark-green placeholder-dark-green/40 focus:outline-none focus:border-dark-yellow"
           />
         </div>
 
         {/* Status Filter */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-sm text-dark-green/70">
-            <Filter className="w-4 h-4" />
-            <span className="font-medium hidden sm:inline">Status:</span>
-          </div>
-          <div className="flex bg-gray-50 rounded-lg p-1 border border-stroke">
-            {["all", "active", "inactive"].map((status) => (
-              <button
-                key={status}
-                onClick={() => setSelectedStatusFilter(status)}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold capitalize transition-all cursor-pointer ${
-                  selectedStatusFilter === status
-                    ? "bg-white text-dark-green shadow-sm border border-stroke/50"
-                    : "text-dark-green/60 hover:text-dark-green hover:bg-gray-100"
-                }`}
-              >
-                {status}
-              </button>
-            ))}
-          </div>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <AsgardSelect
+            value={selectedStatusFilter}
+            onChange={(val) => setSelectedStatusFilter(val)}
+            icon={<Filter className="w-3.5 h-3.5 text-dark-yellow" />}
+            options={[
+              { label: "All Statuses", value: "All" },
+              { label: "Active Only", value: "Active" },
+              { label: "Inactive Only", value: "Inactive" },
+            ]}
+          />
         </div>
       </div>
     </div>

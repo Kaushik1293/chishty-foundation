@@ -1,6 +1,7 @@
 import React from "react";
 import { Plus, Search, Filter, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
+import AsgardSelect from "../AsgardSelect";
 
 interface PartnersHeaderProps {
   partnersCount: number;
@@ -108,18 +109,16 @@ export default function PartnersHeader({
 
         {/* Status Filter */}
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <div className="flex items-center gap-2">
-            <Filter className="w-3.5 h-3.5 text-dark-yellow" />
-            <select
-              value={selectedStatusFilter}
-              onChange={(e) => setSelectedStatusFilter(e.target.value)}
-              className="py-2 px-3 bg-beige border border-stroke rounded-xl text-xs text-dark-green focus:outline-none focus:border-dark-yellow"
-            >
-              <option value="All">All Statuses</option>
-              <option value="Active">Active Only</option>
-              <option value="Inactive">Inactive Only</option>
-            </select>
-          </div>
+          <AsgardSelect
+            value={selectedStatusFilter}
+            onChange={(val) => setSelectedStatusFilter(val)}
+            icon={<Filter className="w-3.5 h-3.5 text-dark-yellow" />}
+            options={[
+              { label: "All Statuses", value: "All" },
+              { label: "Active Only", value: "Active" },
+              { label: "Inactive Only", value: "Inactive" },
+            ]}
+          />
         </div>
       </div>
     </div>

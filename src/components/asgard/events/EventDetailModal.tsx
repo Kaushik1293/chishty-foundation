@@ -2,6 +2,7 @@ import React from "react";
 import { Star } from "lucide-react";
 import Modal from "@/src/components/asgard/Modal";
 import { Event as SupabaseEvent } from "@/app/(web)/action";
+import { formatDateDDMMYYYY } from "@/src/utils/formatDate";
 
 interface EventDetailModalProps {
   isOpen: boolean;
@@ -70,8 +71,8 @@ export default function EventDetailModal({
             <div className="grid grid-cols-2 gap-4 pt-3 border-t border-stroke text-xs">
               <div>
                 <p className="text-[11px] text-dark-green/60">Event Date</p>
-                <p className="font-bold text-dark-green mt-0.5">
-                  {activeEvent.event_date || "Not specified"}
+                <p className="font-bold font-mono text-dark-green mt-0.5">
+                  {formatDateDDMMYYYY(activeEvent.event_date)}
                 </p>
               </div>
 

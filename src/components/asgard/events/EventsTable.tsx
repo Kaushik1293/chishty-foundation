@@ -1,7 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Calendar, Edit, Eye, Loader2, Star, Trash2 } from "lucide-react";
+import { Calendar, Edit, Eye, Loader2, Star, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Event as SupabaseEvent } from "@/app/(web)/action";
+import { formatDateDDMMYYYY } from "@/src/utils/formatDate";
 
 interface EventsTableProps {
   events: SupabaseEvent[];
@@ -94,9 +95,9 @@ export default function EventsTable({
 
                   {/* Event Date */}
                   <td className="py-4 px-4 whitespace-nowrap">
-                    <div className="flex items-center gap-1.5 text-dark-green font-medium">
+                    <div className="flex items-center gap-1.5 text-dark-green font-medium font-mono text-xs">
                       <Calendar className="w-3.5 h-3.5 text-dark-yellow" />
-                      <span>{evt.event_date || "Not set"}</span>
+                      <span>{formatDateDDMMYYYY(evt.event_date)}</span>
                     </div>
                   </td>
 
@@ -135,21 +136,21 @@ export default function EventsTable({
                     <div className="flex items-center justify-end gap-1.5">
                       <button
                         onClick={() => handleOpenDetail(evt)}
-                        className="p-1.5 rounded-lg text-dark-green/70 hover:text-dark-green hover:bg-dark-green/10 transition-colors"
+                        className="p-1.5 rounded-lg text-dark-green/70 hover:text-dark-green hover:bg-dark-green/10 transition-colors cursor-pointer"
                         title="View Event Details"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleOpenEdit(evt)}
-                        className="p-1.5 rounded-lg text-dark-yellow hover:bg-dark-yellow/10 transition-colors"
+                        className="p-1.5 rounded-lg text-dark-yellow hover:bg-dark-yellow/10 transition-colors cursor-pointer"
                         title="Edit Event"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleOpenDelete(evt)}
-                        className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                        className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                         title="Delete Event"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -179,7 +180,21 @@ export default function EventsTable({
           Showing <strong>{filteredEvents.length}</strong> of{" "}
           <strong>{events.length}</strong> events
         </span>
-        {/* Pagination placeholders if needed in future */}
+        <div className="flex items-center gap-2">
+          <button
+            disabled
+            className="p-1.5 rounded-lg border border-stroke bg-white opacity-50 cursor-not-allowed"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <span className="px-2 font-semibold">Page 1 of 1</span>
+          <button
+            disabled
+            className="p-1.5 rounded-lg border border-stroke bg-white opacity-50 cursor-not-allowed"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

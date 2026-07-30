@@ -23,7 +23,7 @@ export default function CausesCrudPage() {
 
   // Filters State
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>("all");
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>("All");
 
   // Modal States
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -68,9 +68,9 @@ export default function CausesCrudPage() {
       const matchesSearch = searchTerm === "" || descMatch;
 
       const matchesStatus =
-        selectedStatusFilter === "all"
+        selectedStatusFilter === "All"
           ? true
-          : selectedStatusFilter === "active"
+          : selectedStatusFilter === "Active"
           ? cause.is_active === true
           : cause.is_active === false;
 

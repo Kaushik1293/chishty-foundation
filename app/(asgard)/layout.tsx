@@ -14,7 +14,7 @@ export default function AsgardLayout({
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  if (pathname === "/asgard/login") {
+  if (pathname.startsWith("/asgard/login")) {
     return <main className="min-h-screen bg-dark-green">{children}</main>;
   }
 

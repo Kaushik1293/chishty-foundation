@@ -9,6 +9,7 @@ import {
 import { getEvents, Event as SupabaseEvent } from "@/app/(web)/action";
 import { getPartners, PartnerRecord } from "@/app/(asgard)/asgard/partners/actions";
 import { getCauses, CauseRecord } from "@/app/(asgard)/asgard/causes/actions";
+import { formatDateDDMMYYYY } from "@/src/utils/formatDate";
 
 export default function AsgardDashboardPage() {
   const [events, setEvents] = useState<SupabaseEvent[]>([]);
@@ -288,8 +289,8 @@ export default function AsgardDashboardPage() {
                         <p className="font-bold text-dark-green truncate">
                           {evt.title}
                         </p>
-                        <p className="text-[10px] text-dark-green/60">
-                          {evt.event_date || "No date"}
+                        <p className="text-[10px] text-dark-green/60 font-mono">
+                          {formatDateDDMMYYYY(evt.event_date)}
                         </p>
                       </div>
                       <span

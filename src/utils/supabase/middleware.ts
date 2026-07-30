@@ -41,7 +41,7 @@ export async function updateSession(request: NextRequest) {
   // ------------------------
   // LOGIN PAGE
   // ------------------------
-  if (pathname === "/asgard/login") {
+  if (pathname.startsWith("/asgard/login")) {
     if (user) {
       return NextResponse.redirect(new URL("/asgard/dashboard", request.url));
     }

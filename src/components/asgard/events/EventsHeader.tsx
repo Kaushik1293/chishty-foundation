@@ -1,6 +1,7 @@
 import React from "react";
 import { Plus, Search, Filter, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
+import AsgardSelect from "../AsgardSelect";
 
 interface EventsHeaderProps {
   eventsCount: number;
@@ -123,28 +124,26 @@ export default function EventsHeader({
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          <div className="flex items-center gap-2">
-            <Filter className="w-3.5 h-3.5 text-dark-yellow" />
-            <select
-              value={selectedStatusFilter}
-              onChange={(e) => setSelectedStatusFilter(e.target.value)}
-              className="py-2 px-3 bg-beige border border-stroke rounded-xl text-xs text-dark-green focus:outline-none focus:border-dark-yellow"
-            >
-              <option value="All">All Statuses</option>
-              <option value="Active">Active Only</option>
-              <option value="Inactive">Inactive Only</option>
-            </select>
-          </div>
+          <AsgardSelect
+            value={selectedStatusFilter}
+            onChange={(val) => setSelectedStatusFilter(val)}
+            icon={<Filter className="w-3.5 h-3.5 text-dark-yellow" />}
+            options={[
+              { label: "All Statuses", value: "All" },
+              { label: "Active Only", value: "Active" },
+              { label: "Inactive Only", value: "Inactive" },
+            ]}
+          />
 
-          <select
+          <AsgardSelect
             value={selectedFeaturedFilter}
-            onChange={(e) => setSelectedFeaturedFilter(e.target.value)}
-            className="py-2 px-3 bg-beige border border-stroke rounded-xl text-xs text-dark-green focus:outline-none focus:border-dark-yellow"
-          >
-            <option value="All">All Events</option>
-            <option value="Featured">Featured Only</option>
-            <option value="Non-Featured">Non-Featured</option>
-          </select>
+            onChange={(val) => setSelectedFeaturedFilter(val)}
+            options={[
+              { label: "All Events", value: "All" },
+              { label: "Featured Only", value: "Featured" },
+              { label: "Non-Featured", value: "Non-Featured" },
+            ]}
+          />
         </div>
       </div>
     </div>
