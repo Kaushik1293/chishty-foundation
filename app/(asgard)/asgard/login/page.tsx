@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -28,8 +28,24 @@ export default function AdminLoginPage() {
   const [rememberMe, setRememberMe] = useState(true);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+
+  useEffect(() => {
+    async function checkAuth() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        router.replace("/asgard/dashboard");
+      } else {
+        setIsCheckingAuth(false);
+      }
+    }
+    checkAuth();
+  }, [router, supabase]);
 
   // Handle Form Submission for Login / Signup / Reset
   const handleSubmit = async (e: React.FormEvent) => {
@@ -139,6 +155,24 @@ export default function AdminLoginPage() {
     setPassword("asgard2026#demo");
     setErrorMsg("");
   };
+
+  if (isCheckingAuth) {
+    return (
+      <div
+        className="relative min-h-screen w-full flex items-center justify-center p-4 overflow-hidden select-none"
+        style={{
+          backgroundImage: `url(${bgImage.src})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="flex flex-col items-center gap-3 z-10 text-white font-satoshi">
+          <div className="w-10 h-10 border-4 border-dark-yellow/30 border-t-dark-yellow rounded-full animate-spin" />
+          <p className="text-sm font-medium tracking-wide">Checking authorization...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
