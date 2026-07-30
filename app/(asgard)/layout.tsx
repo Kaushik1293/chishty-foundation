@@ -12,6 +12,7 @@ export default function AsgardLayout({
 }) {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (pathname === "/asgard/login") {
     return <main className="min-h-screen bg-dark-green">{children}</main>;
@@ -22,11 +23,13 @@ export default function AsgardLayout({
       <AdminSidebar
         isMobileOpen={isMobileOpen}
         onMobileClose={() => setIsMobileOpen(false)}
+        isCollapsed={isCollapsed}
+        setIsCollapsed={setIsCollapsed}
       />
 
-      <div className="flex-1 flex flex-col md:pl-64 min-w-0 transition-all duration-300">
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${isCollapsed ? "md:pl-20" : "md:pl-64"}`}>
         <AdminHeader onMobileMenuToggle={() => setIsMobileOpen(true)} />
-        <main className="flex-1 p-4 md:p-8 max-w-7xl w-full ">
+        <main className="flex-1 p-4 md:p-8 max-w-7xl w-full">
           {children}
         </main>
       </div>

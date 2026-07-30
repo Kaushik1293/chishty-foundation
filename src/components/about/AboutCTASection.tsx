@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import CTAImage from '../../assets/images/aboutpage/cta-section/cta-img.png';
 import centeredIcon from '../../assets/images/aboutpage/cta-section/centred-grp-icon.svg';
@@ -214,12 +215,14 @@ const AboutCTASection = () => {
                             transition={{ duration: 0.3, ease: EASE }}
                             className="relative"
                         >
-                            <PrimaryButton
-                                containerClassName="!bg-[#EEAE46] shadow-md hover:shadow-xl transition-shadow duration-300"
-                                iconWrapperClassName="!bg-dark-green"
-                                text="Get Involved Today"
-                                icon={<ArrowIcon />}
-                            />
+                            <Link href="/contact">
+                                <PrimaryButton
+                                    containerClassName="!bg-[#EEAE46] shadow-md hover:shadow-xl transition-shadow duration-300"
+                                    iconWrapperClassName="!bg-dark-green"
+                                    text="Get Involved Today"
+                                    icon={<ArrowIcon />}
+                                />
+                            </Link>
                         </motion.div>
                     </motion.div>
 

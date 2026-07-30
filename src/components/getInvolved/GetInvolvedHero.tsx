@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from 'next/link';
 import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
 import heroImg from "../../assets/images/getinvolvedpage/get-involvedhero-img.png";
@@ -60,7 +61,9 @@ const GetInvolvedHero = () => {
                         />
 
                         <motion.div variants={fadeUp} className="mt-6">
-                            <PrimaryButton text="Get Involved Today" icon={<ArrowIcon />} />
+                            <Link href="/contact">
+                                <PrimaryButton text="Get Involved Today" icon={<ArrowIcon />} />
+                            </Link>
                         </motion.div>
                     </motion.div>
 

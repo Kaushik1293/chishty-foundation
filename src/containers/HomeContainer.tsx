@@ -13,7 +13,7 @@ const HomeContainer = async () => {
 
     const partners = await getPartners() as IPartner[];
 
-    const events = await getEvents() as IEvent[];
+    const events = await getEvents({ isActiveOnly: true }) as IEvent[];
 
     return (
         <div>

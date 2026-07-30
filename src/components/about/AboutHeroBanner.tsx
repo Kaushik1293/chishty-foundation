@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { motion, type Variants } from 'framer-motion';
+import Link from 'next/link';
 import aboutImg from '../../assets/images/aboutpage/herosection/about-hero-img.png';
 import grpIcon from '../../assets/images/aboutpage/herosection/grp-icon.svg';
 import starIcon from '../../assets/images/homepage/vectors/common/green-star.svg';
@@ -90,7 +91,9 @@ const AboutHeroBanner = () => {
                         </motion.p>
 
                         <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-8">
-                            <PrimaryButton text="Donate Now" icon={<HeartIcon />} />
+                            <Link href="/contact">
+                                <PrimaryButton text="Donate Now" icon={<HeartIcon />} />
+                            </Link>
 
                             <motion.a
                                 href="#our-story"

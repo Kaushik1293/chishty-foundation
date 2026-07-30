@@ -121,7 +121,7 @@ const ContactHeroSection = () => {
                         </motion.div>
 
                         <motion.div variants={fadeUp} className="mt-8">
-                            <Link href="/donate">
+                            <Link href="/contact">
                                 <PrimaryButton
                                     containerClassName="!bg-dark-yellow shadow-md hover:shadow-xl transition-shadow duration-300"
                                     iconWrapperClassName="!bg-white"

@@ -4,39 +4,29 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-  Calendar,
-  Users,
-  Plus,
-  ArrowRight,
-  TrendingUp,
-  Award,
-  Globe,
-  Database,
-  CheckCircle2,
-  Clock,
-  Sparkles,
-  Star,
-  ExternalLink,
-  Loader2,
-  RefreshCw,
+  Calendar, Users, Heart, Plus, ArrowRight, TrendingUp, Award, Globe, Database, CheckCircle2, Clock, Sparkles, Star, ExternalLink, Loader2, RefreshCw,
 } from "lucide-react";
 import { getEvents, Event as SupabaseEvent } from "@/app/(web)/action";
 import { getPartners, PartnerRecord } from "@/app/(asgard)/asgard/partners/actions";
+import { getCauses, CauseRecord } from "@/app/(asgard)/asgard/causes/actions";
 
 export default function AsgardDashboardPage() {
   const [events, setEvents] = useState<SupabaseEvent[]>([]);
   const [partners, setPartners] = useState<PartnerRecord[]>([]);
+  const [causes, setCauses] = useState<CauseRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadDashboardData = async () => {
     setIsLoading(true);
     try {
-      const [eventsData, partnersData] = await Promise.all([
+      const [eventsData, partnersData, causesData] = await Promise.all([
         getEvents(),
         getPartners(),
+        getCauses(),
       ]);
       setEvents(eventsData);
       setPartners(partnersData);
+      setCauses(causesData);
     } catch (err) {
       console.error("Error loading dashboard metrics from Supabase:", err);
     } finally {
@@ -54,6 +44,9 @@ export default function AsgardDashboardPage() {
 
   const totalPartners = partners.length;
   const activePartners = partners.filter((p) => p.is_active).length;
+
+  const totalCauses = causes.length;
+  const activeCauses = causes.filter((c) => c.is_active).length;
 
   const stats = [
     {
@@ -77,6 +70,16 @@ export default function AsgardDashboardPage() {
       href: "/asgard/partners",
     },
     {
+      title: "Active Causes",
+      value: isLoading ? "..." : String(activeCauses),
+      subtitle: `${totalCauses} Total Causes & Campaigns`,
+      icon: Heart,
+      color: "from-rose-500/20 to-red-500/20",
+      borderColor: "border-rose-500/40",
+      iconColor: "text-rose-600",
+      href: "/asgard/causes",
+    },
+    {
       title: "Featured Events",
       value: isLoading ? "..." : String(featuredEvents),
       subtitle: "High Priority Campaigns",
@@ -84,16 +87,6 @@ export default function AsgardDashboardPage() {
       color: "from-blue-500/20 to-indigo-500/20",
       borderColor: "border-blue-500/40",
       iconColor: "text-blue-600",
-      href: "/asgard/events",
-    },
-    {
-      title: "Active Events",
-      value: isLoading ? "..." : String(activeEvents),
-      subtitle: "Published & Live",
-      icon: Globe,
-      color: "from-purple-500/20 to-pink-500/20",
-      borderColor: "border-purple-500/40",
-      iconColor: "text-purple-600",
       href: "/asgard/events",
     },
   ];
@@ -126,7 +119,7 @@ export default function AsgardDashboardPage() {
               className="px-5 py-2.5 rounded-xl bg-linear-to-r from-dark-yellow to-rust-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition-all flex items-center gap-2"
             >
               <Calendar className="w-4 h-4" />
-              <span>Events Manager ({totalEvents})</span>
+              <span>Events ({totalEvents})</span>
             </Link>
 
             <Link
@@ -134,7 +127,15 @@ export default function AsgardDashboardPage() {
               className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm transition-all flex items-center gap-2"
             >
               <Users className="w-4 h-4 text-light-yellow" />
-              <span>Partners Manager ({totalPartners})</span>
+              <span>Partners ({totalPartners})</span>
+            </Link>
+
+            <Link
+              href="/asgard/causes"
+              className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm transition-all flex items-center gap-2"
+            >
+              <Heart className="w-4 h-4 text-light-yellow" />
+              <span>Causes ({totalCauses})</span>
             </Link>
 
             <button
@@ -192,8 +193,8 @@ export default function AsgardDashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <h3 className="text-xl font-bold font-satoshi text-dark-green">
-            Content Management Operations
+          <h3 className="text-lg font-bold font-satoshi text-dark-green">
+            Content Operations
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -205,8 +206,8 @@ export default function AsgardDashboardPage() {
                 <div className="w-12 h-12 rounded-xl bg-dark-green text-light-yellow flex items-center justify-center shadow-md">
                   <Calendar className="w-6 h-6 text-white" />
                 </div>
-                <h4 className="text-2xl font-bold font-satoshi text-dark-green">
-                  Events Management
+                <h4 className="font-bold text-dark-green text-sm mb-1 group-hover:text-dark-yellow transition-colors">
+                  Events
                 </h4>
                 <p className="text-sm text-dark-green/80 leading-relaxed font-normal">
                   Manage and publish foundation events, featured campaigns, banner images, and key dates.
@@ -216,10 +217,11 @@ export default function AsgardDashboardPage() {
               <div className="pt-6">
                 <Link
                   href="/asgard/events"
-                  className="w-full py-3 px-4 rounded-xl bg-dark-green hover:bg-dark-green/90 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-colors"
                 >
-                  <span>Open Events Manager</span>
-                  <ArrowRight className="w-4 h-4 text-dark-yellow" />
+                  <div className="mt-4 flex items-center justify-between text-xs font-semibold text-dark-green group-hover:text-dark-yellow transition-colors">
+                    <span>Open Events</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </div>
                 </Link>
               </div>
             </motion.div>
@@ -232,8 +234,8 @@ export default function AsgardDashboardPage() {
                 <div className="w-12 h-12 rounded-xl bg-dark-yellow text-dark-green flex items-center justify-center shadow-md">
                   <Users className="w-6 h-6 text-white" />
                 </div>
-                <h4 className="text-2xl font-bold font-satoshi text-dark-green">
-                  Partners Management
+                <h4 className="font-bold text-dark-green text-sm mb-1 group-hover:text-dark-yellow transition-colors">
+                  Partners
                 </h4>
                 <p className="text-sm text-dark-green/80 leading-relaxed font-normal">
                   Manage sponsor and partner organizations, logos, website links, and display order.
@@ -243,10 +245,11 @@ export default function AsgardDashboardPage() {
               <div className="pt-6">
                 <Link
                   href="/asgard/partners"
-                  className="w-full py-2.5 px-4 rounded-xl bg-dark-yellow hover:bg-dark-yellow/90 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-colors"
                 >
-                  <span>Open Partners Manager</span>
-                  <ArrowRight className="w-4 h-4 text-dark-green" />
+                  <div className="mt-4 flex items-center justify-between text-xs font-semibold text-dark-green group-hover:text-dark-yellow transition-colors">
+                    <span>Open Partners</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </div>
                 </Link>
               </div>
             </motion.div>

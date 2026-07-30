@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { motion, type Variants } from 'framer-motion'
+import Link from 'next/link'
 import type { StaticImageData } from 'next/image'
 import logo from '../../assets/images/homepage/white-logo.png'
 import star from '../../assets/images/homepage/vectors/common/gold-star.svg'
@@ -246,8 +247,8 @@ const Footer = () => {
                             >
                                 {col.links.map((link, i) => (
                                     <motion.li key={link} variants={linkItem} custom={i}>
-                                        <a
-                                            href="#"
+                                        <Link
+                                            href={link === 'Donate Now' ? '/contact' : '#'}
                                             className="group relative inline-flex items-center text-white/70 text-[15px] transition-colors duration-200 hover:text-dark-yellow"
                                         >
                                             <span className="relative">
@@ -257,7 +258,7 @@ const Footer = () => {
                                             <span className="ml-0 max-w-0 overflow-hidden text-dark-yellow opacity-0 transition-all duration-300 ease-out group-hover:ml-1.5 group-hover:max-w-[16px] group-hover:opacity-100">
                                                 &#8594;
                                             </span>
-                                        </a>
+                                        </Link>
                                     </motion.li>
                                 ))}
                             </motion.ul>

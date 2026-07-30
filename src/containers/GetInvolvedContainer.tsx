@@ -9,7 +9,7 @@ import WaysGetInvolvedSection from '../components/getInvolved/WaysGetInvolvedSec
 
 const GetInvolvedContainer = async () => {
 
-  const events = await getEvents() as IEvent[];
+  const events = await getEvents({ isActiveOnly: true }) as IEvent[];
 
   return (
     <div>

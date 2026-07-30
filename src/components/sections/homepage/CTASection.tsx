@@ -245,7 +245,7 @@ const CTASection = () => {
                                     transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
                                 />
                                 <MagneticLink
-                                    href="#donate"
+                                    href="/contact"
                                     strength={0.15}
                                     style={{ backgroundColor: DARK_GREEN }}
                                     className="group relative flex items-center gap-3 rounded-2xl shadow-xl pl-3 pr-6 py-2.5 overflow-hidden"
@@ -295,7 +295,7 @@ const CTASection = () => {
                                 className="relative"
                             >
                                 <MagneticLink
-                                    href="#partner"
+                                    href="/contact"
                                     strength={0.15}
                                     className="group relative flex items-center gap-3 rounded-2xl pl-3 pr-5 py-2.5 border bg-white overflow-hidden"
                                     style={{ borderColor: '#EADFC9' }}

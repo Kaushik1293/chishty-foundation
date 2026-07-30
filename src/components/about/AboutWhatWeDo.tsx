@@ -390,7 +390,7 @@ const AboutWhatWeDo = () => {
 
 
                     <motion.a
-                        href="#join"
+                        href="/contact"
                         whileHover={{ scale: 1.04 }}
                         whileTap={{ scale: 0.96 }}
                         transition={{ duration: 0.25, ease: EASE }}

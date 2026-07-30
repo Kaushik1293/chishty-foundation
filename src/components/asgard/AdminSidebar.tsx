@@ -4,7 +4,21 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, Calendar, Users, ExternalLink, ChevronLeft, ChevronRight, LogOut, Sparkles, ShieldCheck, Menu, X, } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  Settings, 
+  LogOut, 
+  Menu, 
+  X,
+  ChevronRight,
+  Shield,
+  Calendar,
+  Users,
+  Heart,
+  ChevronLeft,
+  ExternalLink,
+  ShieldCheck
+} from "lucide-react";
 
 import whiteLogo from "../../assets/images/homepage/white-logo.png";
 import star from "../../assets/images/logo-icon.png";
@@ -12,6 +26,8 @@ import star from "../../assets/images/logo-icon.png";
 interface AdminSidebarProps {
   isMobileOpen?: boolean;
   onMobileClose?: () => void;
+  isCollapsed?: boolean;
+  setIsCollapsed?: (val: boolean | ((prev: boolean) => boolean)) => void;
 }
 
 import { createClient } from "@/src/utils/supabase/client";
@@ -20,24 +36,41 @@ import { useEffect } from "react";
 export default function AdminSidebar({
   isMobileOpen = false,
   onMobileClose,
+  isCollapsed: externalIsCollapsed,
+  setIsCollapsed: externalSetIsCollapsed,
 }: AdminSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [internalIsCollapsed, setInternalIsCollapsed] = useState(false);
+
+  const isCollapsed = externalIsCollapsed !== undefined ? externalIsCollapsed : internalIsCollapsed;
+  const setIsCollapsed = externalSetIsCollapsed || setInternalIsCollapsed;
   const [userEmail, setUserEmail] = useState<string | null>("admin@chishty.org");
   const [userName, setUserName] = useState<string>("Administrator");
+  const [eventsCount, setEventsCount] = useState<number>(0);
+  const [partnersCount, setPartnersCount] = useState<number>(0);
+  const [causesCount, setCausesCount] = useState<number>(0);
 
   const supabase = createClient();
 
   useEffect(() => {
-    async function getUser() {
+    async function getUserAndCounts() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserEmail(user.email || null);
         setUserName(user.user_metadata?.full_name || user.email?.split("@")[0] || "Administrator");
       }
+
+      const { count: eCount } = await supabase.from('events').select('*', { count: 'exact', head: true });
+      if (eCount !== null) setEventsCount(eCount);
+
+      const { count: pCount } = await supabase.from('partners').select('*', { count: 'exact', head: true });
+      if (pCount !== null) setPartnersCount(pCount);
+
+      const { count: cCount } = await supabase.from('causes').select('*', { count: 'exact', head: true });
+      if (cCount !== null) setCausesCount(cCount);
     }
-    getUser();
+    getUserAndCounts();
   }, []);
 
   const navItems = [
@@ -45,19 +78,25 @@ export default function AdminSidebar({
       label: "Dashboard",
       href: "/asgard/dashboard",
       icon: LayoutDashboard,
-      badge: "Overview",
+      badge: null,
     },
     {
-      label: "Events Management",
+      label: "Events",
       href: "/asgard/events",
       icon: Calendar,
-      badge: "CRUD",
+      badge: eventsCount.toString(),
     },
     {
-      label: "Partners Management",
+      label: "Partners",
       href: "/asgard/partners",
       icon: Users,
-      badge: "CRUD",
+      badge: partnersCount.toString(),
+    },
+    {
+      label: "Causes & Campaigns",
+      href: "/asgard/causes",
+      icon: Heart,
+      badge: causesCount.toString(),
     },
   ];
 
@@ -78,16 +117,16 @@ export default function AdminSidebar({
     <div className="flex flex-col h-full justify-between bg-dark-green text-white border-r border-dark-yellow/30 relative shadow-2xl select-none">
       {/* Top Header & Brand */}
       <div>
-        <div className="p-5 flex items-center justify-between border-b border-white/10">
+        <div className={`p-4 flex items-center border-b border-white/10 ${isCollapsed ? "flex-col justify-center gap-3 px-2" : "justify-between"}`}>
           <Link
             href="/asgard"
             className="flex items-center gap-3 overflow-hidden group"
           >
-            <div className="relative w-10 h-10 rounded-xl bg-white p-0.5 shadow-lg shrink-0 flex items-center justify-center">
+            <div className="relative w-9 h-9 rounded-xl bg-white p-0.5 shadow-lg shrink-0 flex items-center justify-center">
               <motion.img
                 src={star.src}
                 alt="Chishty Logo"
-                className="w-6 h-6 object-contain"
+                className="w-5 h-5 object-contain"
               />
             </div>
 
@@ -116,7 +155,7 @@ export default function AdminSidebar({
           {/* Desktop collapse toggle */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden md:flex items-center justify-center w-7 h-7 rounded-lg bg-white/10 hover:bg-dark-yellow text-white/80 hover:text-white transition-colors"
+            className="hidden md:flex items-center justify-center w-7 h-7 rounded-lg bg-white/10 hover:bg-dark-yellow text-white/80 hover:text-white transition-colors shrink-0 cursor-pointer"
             title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
             {isCollapsed ? (
@@ -214,11 +253,14 @@ export default function AdminSidebar({
 
         {/* User Card */}
         <div
-          className={`flex items-center gap-3 p-2.5 rounded-xl bg-black/20 border border-white/10 ${isCollapsed ? "justify-center" : "justify-between"
+          className={`flex items-center gap-3 p-2 rounded-xl bg-black/20 border border-white/10 ${isCollapsed ? "justify-center" : "justify-between"
             }`}
         >
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-8 h-8 rounded-full bg-linear-to-tr from-dark-yellow to-light-yellow text-dark-green font-bold text-xs flex items-center justify-center shrink-0 border border-white/20 uppercase">
+            <div
+              className="w-8 h-8 rounded-full bg-linear-to-tr from-dark-yellow to-light-yellow text-dark-green font-bold text-xs flex items-center justify-center shrink-0 border border-white/20 uppercase"
+              title={userName}
+            >
               {userName.slice(0, 2)}
             </div>
             {!isCollapsed && (
@@ -236,13 +278,15 @@ export default function AdminSidebar({
             )}
           </div>
 
-          <button
-            onClick={handleLogout}
-            className="p-1.5 rounded-lg text-white/60 hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
-            title="Sign Out"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
+          {!isCollapsed && (
+            <button
+              onClick={handleLogout}
+              className="p-1.5 rounded-lg text-white/60 hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0 cursor-pointer"
+              title="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
     </div>

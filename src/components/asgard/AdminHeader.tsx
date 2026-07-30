@@ -4,6 +4,9 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { createClient } from "@/src/utils/supabase/client";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 import {
   Menu,
   Bell,
@@ -13,6 +16,10 @@ import {
   ChevronDown,
   User,
   Shield,
+  Heart,
+  LayoutDashboard,
+  Calendar,
+  Users,
   LogOut,
   RefreshCw,
 } from "lucide-react";
@@ -20,10 +27,6 @@ import {
 interface AdminHeaderProps {
   onMobileMenuToggle: () => void;
 }
-
-import { createClient } from "@/src/utils/supabase/client";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 export default function AdminHeader({ onMobileMenuToggle }: AdminHeaderProps) {
   const pathname = usePathname();
@@ -34,6 +37,8 @@ export default function AdminHeader({ onMobileMenuToggle }: AdminHeaderProps) {
   const [userName, setUserName] = useState<string>("Admin");
 
   const supabase = createClient();
+
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function getUser() {
@@ -46,6 +51,18 @@ export default function AdminHeader({ onMobileMenuToggle }: AdminHeaderProps) {
     getUser();
   }, []);
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const handleSignOut = async (e: React.MouseEvent) => {
     e.preventDefault();
     await supabase.auth.signOut();
@@ -55,17 +72,22 @@ export default function AdminHeader({ onMobileMenuToggle }: AdminHeaderProps) {
 
   // Dynamic Page Title
   const getPageTitle = () => {
-    if (pathname.includes("/events"))
+    if (pathname.includes("/asgard/causes") || pathname.includes("/causes"))
+      return {
+        title: "Causes & Campaigns",
+        subtitle: "Create, view, update, and manage foundation causes and campaigns",
+      };
+    if (pathname.includes("/asgard/events") || pathname.includes("/events"))
       return {
         title: "Events Management",
         subtitle: "Create, view, update, and manage foundation events",
       };
-    if (pathname.includes("/asgard/partners"))
+    if (pathname.includes("/asgard/partners") || pathname.includes("/partners"))
       return {
         title: "Partners Management",
         subtitle: "Manage sponsors, NGO alliances, and global partners",
       };
-    if (pathname.includes("/asgard"))
+    if (pathname === "/asgard")
       return {
         title: "Asgard Admin Overview",
         subtitle: "Welcome back! Here is your quick performance breakdown",
@@ -90,13 +112,14 @@ export default function AdminHeader({ onMobileMenuToggle }: AdminHeaderProps) {
             <Menu className="w-5 h-5" />
           </button>
 
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold font-satoshi text-dark-green leading-tight">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-dark-yellow bg-dark-yellow/10 px-2.5 py-1 rounded-md border border-dark-yellow/30">
+              Admin Portal
+            </span>
+            <span className="text-xs text-dark-green/40 font-bold">/</span>
+            <h1 className="text-sm md:text-base font-bold font-satoshi text-dark-green tracking-wide">
               {pageInfo.title}
             </h1>
-            <p className="text-xs text-dark-green/60 font-satoshi hidden sm:block">
-              {pageInfo.subtitle}
-            </p>
           </div>
         </div>
 
@@ -113,13 +136,13 @@ export default function AdminHeader({ onMobileMenuToggle }: AdminHeaderProps) {
           </div>
 
           {/* User Profile Pill */}
-          <div className="relative">
+          <div className="relative" ref={menuRef}>
             <button
               onClick={() => {
                 setIsUserMenuOpen(!isUserMenuOpen);
                 setIsNotifOpen(false);
               }}
-              className="flex items-center gap-2.5 p-1.5 pl-2.5 rounded-xl bg-dark-green hover:bg-dark-green/90 text-white transition-all shadow-md"
+              className="flex items-center gap-2.5 p-1.5 pl-2.5 rounded-xl bg-dark-green hover:bg-dark-green/90 text-white transition-all shadow-md cursor-pointer"
             >
               <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-dark-yellow to-[#FFD56C] text-dark-green font-bold text-xs flex items-center justify-center uppercase">
                 {userName.slice(0, 1)}
@@ -127,7 +150,7 @@ export default function AdminHeader({ onMobileMenuToggle }: AdminHeaderProps) {
               <span className="text-xs font-semibold font-satoshi hidden sm:inline-block">
                 {userName}
               </span>
-              <ChevronDown className="w-3.5 h-3.5 text-white/70" />
+              <ChevronDown className={`w-3.5 h-3.5 text-white/70 transition-transform duration-200 ${isUserMenuOpen ? "rotate-180" : ""}`} />
             </button>
 
             <AnimatePresence>
@@ -154,7 +177,7 @@ export default function AdminHeader({ onMobileMenuToggle }: AdminHeaderProps) {
                       onClick={() => setIsUserMenuOpen(false)}
                       className="flex items-center gap-2 px-3 py-2 text-xs text-dark-green hover:bg-dark-green/5 rounded-xl transition-colors font-medium"
                     >
-                      <User className="w-4 h-4 text-dark-yellow" />
+                      <LayoutDashboard className="w-4 h-4 text-dark-yellow" />
                       <span>Admin Overview</span>
                     </Link>
                     <Link
@@ -162,7 +185,7 @@ export default function AdminHeader({ onMobileMenuToggle }: AdminHeaderProps) {
                       onClick={() => setIsUserMenuOpen(false)}
                       className="flex items-center gap-2 px-3 py-2 text-xs text-dark-green hover:bg-dark-green/5 rounded-xl transition-colors font-medium"
                     >
-                      <Shield className="w-4 h-4 text-dark-yellow" />
+                      <Calendar className="w-4 h-4 text-dark-yellow" />
                       <span>Events Manager</span>
                     </Link>
                     <Link
@@ -170,8 +193,16 @@ export default function AdminHeader({ onMobileMenuToggle }: AdminHeaderProps) {
                       onClick={() => setIsUserMenuOpen(false)}
                       className="flex items-center gap-2 px-3 py-2 text-xs text-dark-green hover:bg-dark-green/5 rounded-xl transition-colors font-medium"
                     >
-                      <Sparkles className="w-4 h-4 text-dark-yellow" />
+                      <Users className="w-4 h-4 text-dark-yellow" />
                       <span>Partners Manager</span>
+                    </Link>
+                    <Link
+                      href="/asgard/causes"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-xs text-dark-green hover:bg-dark-green/5 rounded-xl transition-colors font-medium"
+                    >
+                      <Heart className="w-4 h-4 text-dark-yellow" />
+                      <span>Causes & Campaigns</span>
                     </Link>
                   </div>
 
