@@ -745,7 +745,7 @@ const Navbar = () => {
 
                             <div className="p-6 pt-5">
                                 <div className="flex items-center justify-between mb-8">
-                                    <img src={isScrolled ? whiteLogo.src : logo.src} alt="logo" className="h-20 object-contain" />
+                                    <img src={whiteLogo.src} alt="logo" className="h-20 object-contain" />
 
                                     <motion.button
                                         whileHover={{ rotate: 90 }}
@@ -753,6 +753,7 @@ const Navbar = () => {
                                         transition={{ duration: 0.25 }}
                                         onClick={() => setMenuOpen(false)}
                                         className="text-white text-3xl h-10 w-10 rounded-full border border-white/30 flex items-center justify-center"
+                                        aria-label="Close menu"
                                     >
                                         ×
                                     </motion.button>
@@ -814,9 +815,9 @@ const Navbar = () => {
                                     transition={{ delay: 0.5, duration: 0.4 }}
                                     className="pt-6 flex flex-col gap-4"
                                 >
-                                    <Link href="/contact" className="w-full">
+                                    <Link href="/contact" className="w-full flex justify-center" onClick={() => setMenuOpen(false)}>
                                         <PrimaryButton text={"Donate Now"}
-                                            containerClassName="!bg-dark-yellow w-full"
+                                            containerClassName="!bg-dark-yellow"
                                             iconWrapperClassName="!bg-white"
                                             icon={
                                                 <svg width="20" height="19" viewBox="0 0 20 19" fill="none" xmlns="http://www.w3.org/2000/svg">

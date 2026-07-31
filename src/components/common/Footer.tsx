@@ -335,7 +335,16 @@ const Footer = () => {
                             className="w-4 h-4"
                         />
                         <span>
-                            by <span className="font-semibold underline text-white">Ascendtis</span>.
+                            by{' '}
+                            <a
+                                href="https://ascendtis.com/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-semibold underline text-white hover:text-dark-yellow transition-colors"
+                            >
+                                Ascendtis
+                            </a>
+                            .
                         </span>
                     </div>
                 </motion.div>
