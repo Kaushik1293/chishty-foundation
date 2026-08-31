@@ -18,31 +18,31 @@ const milestones = [
         year: '2007',
         icon: Icon2007,
         bg: 'bg-dark-yellow',
-        description: 'Foundation established with a vision to serve humanity.',
-    },
-    {
-        year: '2010',
-        icon: Icon2010,
-        bg: 'bg-dark-green',
-        description: 'Expanded education and healthcare programs.',
+        description: 'Chishty Foundation established at Ajmer Sharif to serve humanity.',
     },
     {
         year: '2015',
         icon: Icon2015,
-        bg: 'bg-dark-yellow',
-        description: 'Reached 100+ communities across regions.',
+        bg: 'bg-dark-green',
+        description: 'Bab ul Ilm school opens near Bithoor village, Ajmer district.',
     },
     {
         year: '2020',
         icon: Icon2020,
-        bg: 'bg-dark-green',
-        description: 'Strengthened global partnerships and sustainability efforts.',
+        bg: 'bg-dark-yellow',
+        description: 'Pandemic relief — langar, ration and medical support across Ajmer.',
     },
     {
-        year: '2024+',
+        year: '2024',
         icon: Icon2024,
+        bg: 'bg-dark-green',
+        description: 'Ambassador, UN International Day of Living Together in Peace, Geneva.',
+    },
+    {
+        year: '2026+',
+        icon: Icon2010,
         bg: 'bg-dark-yellow',
-        description: 'Continuing the mission with more impact, together.',
+        description: 'Continuing the mission with wider reach, together.',
     },
 ];
 
@@ -123,9 +123,7 @@ const AboutJourneySection = () => {
                         variants={fadeUp}
                         className="relative font-satoshi text-white/80 text-base leading-relaxed mb-10 max-w-sm"
                     >
-                        Founded in 2007 by Haji Syed Salman Chishty, Chishty Foundation began with a
-                        simple yet powerful vision - to serve humanity through selfless action and
-                        spiritual values.
+                        Founded in 2007 by Haji Syed Salman Chishty, Gaddi Nashin of Dargah Ajmer Sharif, the Foundation began with a simple yet powerful vision — to serve humanity through selfless action and spiritual values.
                     </motion.p>
 
                     <motion.div variants={fadeUp} className="relative">
@@ -133,7 +131,7 @@ const AboutJourneySection = () => {
                             Haji Syed Salman Chishty
                         </p>
                         <p className="font-satoshi text-dark-yellow text-xs tracking-[0.2em] font-semibold uppercase">
-                            Founder
+                            Founder &amp; Chairman
                         </p>
                     </motion.div>
                 </motion.div>

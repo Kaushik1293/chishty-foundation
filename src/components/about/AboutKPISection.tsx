@@ -3,28 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion, useInView, type Variants } from 'framer-motion';
-import liveImpact from '../../assets/images/homepage/aboutsection/live-impact.svg';
-import mealsDistributed from '../../assets/images/homepage/aboutsection/meals-distributed.svg';
-import studentsSupported from '../../assets/images/homepage/aboutsection/students-supported.svg';
-import medicalCamps from '../../assets/images/homepage/aboutsection/medical-camps.svg';
+import { impactStats, ImpactStat } from '@/src/data/impactStats';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 const GOLD = '#F4CB8E';
-
-type Stat = {
-    icon: any;
-    value: number;
-    decimals?: number;
-    suffix: string;
-    label: string;
-};
-
-const stats: Stat[] = [
-    { icon: liveImpact, value: 450, suffix: 'K+', label: 'Lives Impacted' },
-    { icon: mealsDistributed, value: 2.5, decimals: 1, suffix: 'M+', label: 'Meals Distributed' },
-    { icon: studentsSupported, value: 15, suffix: 'K+', label: 'Students Supported' },
-    { icon: medicalCamps, value: 850, suffix: '+', label: 'Medical Camps' },
-];
 
 const containerVariants: Variants = {
     hidden: {},
@@ -36,11 +18,11 @@ const itemVariants: Variants = {
     visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } },
 };
 
-const useCountUp = (value: number, inView: boolean, duration = 1.6) => {
+const useCountUp = (value: number | null, inView: boolean, duration = 1.6) => {
     const [display, setDisplay] = useState(0);
 
     useEffect(() => {
-        if (!inView) return;
+        if (!inView || value === null) return;
         let raf: number;
         let start: number | null = null;
 
@@ -61,7 +43,7 @@ const useCountUp = (value: number, inView: boolean, duration = 1.6) => {
 };
 
 
-const StatItem = ({ stat, isFirst }: { stat: Stat; isFirst: boolean }) => {
+const StatItem = ({ stat, isFirst }: { stat: ImpactStat; isFirst: boolean }) => {
     const ref = React.useRef<HTMLDivElement>(null);
     const inView = useInView(ref, { once: true, amount: 0.6 });
     const [hovered, setHovered] = useState(false);
@@ -115,8 +97,7 @@ const StatItem = ({ stat, isFirst }: { stat: Stat; isFirst: boolean }) => {
                     animate={{ color: hovered ? GOLD : '#FFFFFF' }}
                     transition={{ duration: 0.35, ease: EASE }}
                 >
-                    {count.toFixed(stat.decimals ?? 0)}
-                    {stat.suffix}
+                    {stat.value !== null ? `${count.toFixed(stat.decimals ?? 0)}${stat.suffix || ''}` : '—'}
                 </motion.p>
                 <p className="font-satoshi text-white/70 text-xs sm:text-sm mt-1 sm:mt-1.5 leading-snug whitespace-normal">
                     {stat.label}
@@ -151,7 +132,7 @@ const AboutKPISection = () => {
                         className="font-satoshi font-bold text-xs md:text-sm tracking-[0.2em] uppercase mb-2"
                         style={{ color: GOLD }}
                     >
-                        Our Impacts In Numbers
+                        Our Impact In Numbers
                     </p>
                     <h2 className="font-cormorant text-white text-3xl sm:text-4xl lg:text-[42px] leading-[1.15]">
                         Together, We
@@ -161,7 +142,7 @@ const AboutKPISection = () => {
                 </motion.div>
 
                 <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 lg:gap-4 xl:gap-6 w-full 2xl:w-auto">
-                    {stats.map((stat, i) => (
+                    {impactStats.map((stat, i) => (
                         <StatItem key={stat.label} stat={stat} isFirst={i === 0} />
                     ))}
                 </div>

@@ -44,28 +44,28 @@ const infoItems = [
     {
         icon: <LocationIcon />,
         label: "ADDRESS",
-        lines: ["Dargah Sharif, Ajmer", "Rajasthan, India - 305001"],
-        href: "https://www.google.com/maps/search/?api=1&query=Dargah+Sharif+Ajmer+Rajasthan+India",
+        lines: ["Chishty Manzil Sufi Khanqah, Jhalra Street", "Dargah Sharif, Ajmer Sharif — 305001, Rajasthan, India"],
+        href: "https://www.google.com/maps/search/?api=1&query=Chishty+Manzil+Sufi+Khanqah+Jhalra+Street+Dargah+Sharif+Ajmer+Sharif",
         type: "external",
     },
     {
         icon: <MailIcon />,
         label: "EMAIL US",
-        lines: ["info@chishtyfoundation.org", "connect@chishtyfoundation.org"],
-        links: ["mailto:info@chishtyfoundation.org", "mailto:connect@chishtyfoundation.org"],
+        lines: ["chairman@chishtyfoundation.org", "services@chishtyfoundation.org"],
+        links: ["mailto:chairman@chishtyfoundation.org", "mailto:services@chishtyfoundation.org"],
         type: "email",
     },
     {
         icon: <PhoneIcon />,
-        label: "CALL US",
-        lines: ["+91 823 123 4567", "+91 982 555 7890"],
-        links: ["tel:+918231234567", "tel:+919825557890"],
+        label: "CALL / WHATSAPP",
+        lines: ["+91 145 2429473", "+91 145 2944973", "WhatsApp: +91 98291 74973"],
+        links: ["tel:+911452429473", "tel:+911452944973", "https://wa.me/919829174973"],
         type: "phone",
     },
     {
         icon: <ClockIcon />,
         label: "OFFICE HOURS",
-        lines: ["Mon - Sat: 9:00 AM - 6:00 PM", "Sunday: Closed"],
+        lines: ["Monday to Sunday", "9:00 AM – 5:00 PM IST"],
         type: "text",
     },
 ];
@@ -112,8 +112,8 @@ const ContactHeroSection = () => {
                                 eyebrow="GET IN TOUCH"
                                 eyebrowColor="#ffffff"
                                 starColor="white"
-                                title="Contact Us"
-                                description="We'd love to hear from you. Reach out with your questions, ideas, or to get involved."
+                                title="Get In Touch"
+                                description="Write to us, call, or visit the Khanqah at Ajmer Sharif — our door is open to everyone."
                                 titleColor="#ffffff"
                                 descriptionColor="#ffffff"
                                 maxWidth="max-w-3xl"

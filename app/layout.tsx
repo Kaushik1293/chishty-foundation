@@ -4,6 +4,8 @@ import localFont from "next/font/local";
 import "./globals.css";
 import Navbar from "@/src/components/common/Navbar";
 import Footer from "@/src/components/common/Footer";
+import GoogleTranslateScript from "@/src/components/common/GoogleTranslateScript";
+import WhatsAppFloatingButton from "@/src/components/common/WhatsAppFloatingButton";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -45,9 +47,11 @@ export default function RootLayout({
       `}
     >
       <body className="min-h-full flex flex-col">
+        <GoogleTranslateScript />
         <Navbar/>
         {children}
         <Footer/>
+        <WhatsAppFloatingButton />
       </body>
     </html>
   );

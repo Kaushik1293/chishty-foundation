@@ -7,22 +7,21 @@ import FilledLeaf from '../../assets/images/aboutpage/cta-section/filled-leaf.pn
 import LineLeaf from '../../assets/images/aboutpage/cta-section/line-leaf.png';
 import GreenStar from '../../assets/images/homepage/vectors/common/green-star.svg';
 
-import FacebookIcon from '../../assets/images/contact/mapsection/fb.svg'
-import InstagramIcon from '../../assets/images/contact/mapsection/insta.svg'
-import XIcon from '../../assets/images/contact/mapsection/x.svg'
-import WhatsAppIconOutline from '../../assets/images/contact/mapsection/wp.svg'
-import YouTubeIcon from '../../assets/images/contact/mapsection/yt.svg'
-
+import FacebookIcon from '../../assets/images/contact/mapsection/fb.svg';
+import InstagramIcon from '../../assets/images/contact/mapsection/insta.svg';
+import XIcon from '../../assets/images/contact/mapsection/x.svg';
+import WhatsAppIconOutline from '../../assets/images/contact/mapsection/wp.svg';
+import YouTubeIcon from '../../assets/images/contact/mapsection/yt.svg';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 const DARK_GREEN = '#0A3231';
 
 const socials = [
-    { icon: FacebookIcon, label: 'Facebook', href: '#' },
-    { icon: InstagramIcon, label: 'Instagram', href: '#' },
-    { icon: XIcon, label: 'X', href: '#' },
-    { icon: WhatsAppIconOutline, label: 'WhatsApp', href: '#' },
-    { icon: YouTubeIcon, label: 'YouTube', href: '#' },
+    { icon: FacebookIcon, label: 'Facebook', href: 'https://www.facebook.com/chishtyfoundation/' },
+    { icon: InstagramIcon, label: 'Instagram', href: 'https://www.instagram.com/chishtyfoundation/' },
+    { icon: XIcon, label: 'X', href: 'https://x.com/sufimusafir' },
+    { icon: WhatsAppIconOutline, label: 'WhatsApp', href: 'https://wa.me/919829174973' },
+    { icon: YouTubeIcon, label: 'YouTube', href: 'https://www.youtube.com/@SufiMusafir' },
 ];
 
 const Sparkle = ({
@@ -111,18 +110,25 @@ const ContactMapSection = () => {
                 <div className="relative w-full lg:w-[50%] shrink-0 z-10">
                     <motion.div
                         className="relative h-70 sm:h-90 lg:h-full md:pr-3 pb-3 md:pb-0 z-0 md:border-r border-b md:border-0 border-[#F4DDBD]"
-
                     >
-
                         <iframe
-                            title="Chishty Foundation location — Ajmer"
-                            src="https://www.google.com/maps?q=Ajmer,Rajasthan,India&output=embed"
+                            title="Chishty Foundation — Chishty Manzil Sufi Khanqah, Ajmer"
+                            src="https://www.google.com/maps?q=26.4555233,74.6280802&z=16&output=embed"
                             className="absolute inset-0 w-full h-full grayscale-10"
                             style={{ border: 0 }}
                             loading="lazy"
                             referrerPolicy="no-referrer-when-downgrade"
                         />
-
+                        <div className="absolute bottom-3 left-3 z-20">
+                            <a
+                                href="https://www.google.com/maps/dir/?api=1&destination=26.4555233,74.6280802"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 text-dark-green text-xs font-semibold shadow-md hover:bg-dark-green hover:text-white transition-colors"
+                            >
+                                Get Directions &#8599;
+                            </a>
+                        </div>
                     </motion.div>
                 </div>
 
@@ -152,7 +158,7 @@ const ContactMapSection = () => {
                         className="font-cormorant text-4xl md:text-[44px] leading-[1.15]"
                         style={{ color: DARK_GREEN }}
                     >
-                        Let's Build A
+                        Let&apos;s Build A
                         <br />
                         Better Tomorrow
                     </motion.h2>
@@ -182,7 +188,7 @@ const ContactMapSection = () => {
                         className="font-satoshi text-base md:text-lg max-w-md"
                         style={{ color: DARK_GREEN, opacity: 0.85 }}
                     >
-                        Whether you want to help, collaborate, or simply learn more - we're just a message away.
+                        Follow the work, join a programme, or simply share the message — every connection carries it further.
                     </motion.p>
 
                     <motion.div
@@ -196,6 +202,8 @@ const ContactMapSection = () => {
                             <motion.a
                                 key={s.label}
                                 href={s.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 aria-label={s.label}
                                 initial={{ opacity: 0, y: 14, scale: 0.8 }}
                                 whileInView={{ opacity: 1, y: 0, scale: 1 }}

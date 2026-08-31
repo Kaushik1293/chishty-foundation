@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion, type Variants } from 'framer-motion';
 import mosqueImage from '../../assets/images/contact/formSection/mosque-img.png';
 import patternImage from '../../assets/images/contact/formSection/right-pattern.svg';
@@ -10,13 +11,24 @@ import SectionHeading from '../common/SectionHeading';
 const EASE = [0.16, 1, 0.3, 1] as const;
 
 type FormData = {
-    firstName: string;
-    lastName: string;
+    name: string;
     email: string;
+    phone: string;
+    subject: string;
     message: string;
+    agreedToPrivacy: boolean;
 };
 
 type FormErrors = Partial<Record<keyof FormData, string>>;
+
+const subjectOptions = [
+    'General Enquiry',
+    'Volunteering',
+    'Donation & Support',
+    'Partnership',
+    'Media & Press',
+    'Event Invitation',
+];
 
 const WhatsAppIcon = () => (
     <svg width="26" height="26" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
@@ -50,10 +62,12 @@ const fadeUp: Variants = {
 
 const ContactFormSection = () => {
     const [formData, setFormData] = useState<FormData>({
-        firstName: '',
-        lastName: '',
+        name: '',
         email: '',
+        phone: '',
+        subject: subjectOptions[0],
         message: '',
+        agreedToPrivacy: true,
     });
     const [errors, setErrors] = useState<FormErrors>({});
     const [submitted, setSubmitted] = useState(false);
@@ -61,16 +75,19 @@ const ContactFormSection = () => {
     const validate = (): boolean => {
         const newErrors: FormErrors = {};
 
-        if (!formData.firstName.trim()) {
-            newErrors.firstName = 'First name is required';
-        }
-        if (!formData.lastName.trim()) {
-            newErrors.lastName = 'Last name is required';
+        if (!formData.name.trim()) {
+            newErrors.name = 'Name is required';
         }
         if (!formData.email.trim()) {
             newErrors.email = 'Email is required';
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
             newErrors.email = 'Enter a valid email address';
+        }
+        if (!formData.message.trim()) {
+            newErrors.message = 'Message is required';
+        }
+        if (!formData.agreedToPrivacy) {
+            newErrors.agreedToPrivacy = 'Please accept the Privacy Policy to proceed';
         }
 
         setErrors(newErrors);
@@ -78,9 +95,10 @@ const ContactFormSection = () => {
     };
 
     const handleChange = (field: keyof FormData) => (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
     ) => {
-        setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+        const val = e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value;
+        setFormData((prev) => ({ ...prev, [field]: val }));
         if (errors[field]) {
             setErrors((prev) => ({ ...prev, [field]: undefined }));
         }
@@ -90,8 +108,6 @@ const ContactFormSection = () => {
         e.preventDefault();
         if (validate()) {
             setSubmitted(true);
-            // Wire up your actual submit logic here
-            console.log('Form submitted:', formData);
         }
     };
 
@@ -123,107 +139,167 @@ const ContactFormSection = () => {
                             description={
                                 <>
                                     <p className="font-medium leading-normal text-dark-green text-lg">
-                                        We're here to help! Fill out the form and our team will get back to you as soon as possible.
+                                        We&apos;re here to help! Fill out the form and our team will get back to you as soon as possible.
                                     </p>
                                 </>
                             }
                         />
                     </motion.div>
 
-                    <form onSubmit={handleSubmit} noValidate className='mt-8'>
-                        <motion.div variants={fadeUp} className="grid sm:grid-cols-2 gap-5 mb-5">
-                            <div>
-                                <label className="block font-satoshi text-sm text-dark-green mb-2">
-                                    First name<span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.firstName}
-                                    onChange={handleChange('firstName')}
-                                    placeholder="Enter First name"
-                                    className={`${inputBaseClasses} ${errors.firstName ? 'border-red-400' : 'border-transparent'}`}
-                                />
-                                {errors.firstName && (
-                                    <motion.p
-                                        initial={{ opacity: 0, y: -4 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="text-red-500 text-xs mt-1.5 font-satoshi"
-                                    >
-                                        {errors.firstName}
-                                    </motion.p>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="block font-satoshi text-sm text-dark-green mb-2">
-                                    Last name<span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.lastName}
-                                    onChange={handleChange('lastName')}
-                                    placeholder="Enter Last name"
-                                    className={`${inputBaseClasses} ${errors.lastName ? 'border-red-400' : 'border-transparent'}`}
-                                />
-                                {errors.lastName && (
-                                    <motion.p
-                                        initial={{ opacity: 0, y: -4 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="text-red-500 text-xs mt-1.5 font-satoshi"
-                                    >
-                                        {errors.lastName}
-                                    </motion.p>
-                                )}
-                            </div>
+                    {submitted ? (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mt-8 p-8 rounded-2xl bg-dark-green text-white text-center"
+                        >
+                            <h4 className="font-cormorant text-2xl md:text-3xl text-dark-yellow font-bold mb-3">
+                                Thank You
+                            </h4>
+                            <p className="font-satoshi text-base text-white/90 leading-relaxed">
+                                Thank you — your message has reached us. Someone from the Foundation will reply shortly.
+                            </p>
                         </motion.div>
+                    ) : (
+                        <form onSubmit={handleSubmit} noValidate className="mt-8">
+                            <motion.div variants={fadeUp} className="grid sm:grid-cols-2 gap-5 mb-5">
+                                <div>
+                                    <label className="block font-satoshi text-sm text-dark-green mb-2">
+                                        Name<span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.name}
+                                        onChange={handleChange('name')}
+                                        placeholder="Enter your full name"
+                                        className={`${inputBaseClasses} ${errors.name ? 'border-red-400' : 'border-transparent'}`}
+                                    />
+                                    {errors.name && (
+                                        <motion.p
+                                            initial={{ opacity: 0, y: -4 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="text-red-500 text-xs mt-1.5 font-satoshi"
+                                        >
+                                            {errors.name}
+                                        </motion.p>
+                                    )}
+                                </div>
 
-                        <motion.div variants={fadeUp} className="mb-5">
-                            <label className="block font-satoshi text-sm text-dark-green mb-2">
-                                Email<span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="email"
-                                value={formData.email}
-                                onChange={handleChange('email')}
-                                placeholder="Enter Email"
-                                className={`${inputBaseClasses} ${errors.email ? 'border-red-400' : 'border-transparent'}`}
-                            />
-                            {errors.email && (
-                                <motion.p
-                                    initial={{ opacity: 0, y: -4 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="text-red-500 text-xs mt-1.5 font-satoshi"
+                                <div>
+                                    <label className="block font-satoshi text-sm text-dark-green mb-2">
+                                        Email<span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={handleChange('email')}
+                                        placeholder="Enter your email address"
+                                        className={`${inputBaseClasses} ${errors.email ? 'border-red-400' : 'border-transparent'}`}
+                                    />
+                                    {errors.email && (
+                                        <motion.p
+                                            initial={{ opacity: 0, y: -4 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="text-red-500 text-xs mt-1.5 font-satoshi"
+                                        >
+                                            {errors.email}
+                                        </motion.p>
+                                    )}
+                                </div>
+                            </motion.div>
+
+                            <motion.div variants={fadeUp} className="grid sm:grid-cols-2 gap-5 mb-5">
+                                <div>
+                                    <label className="block font-satoshi text-sm text-dark-green mb-2">
+                                        Phone
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        value={formData.phone}
+                                        onChange={handleChange('phone')}
+                                        placeholder="Enter your contact number"
+                                        className={`${inputBaseClasses} border-transparent`}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block font-satoshi text-sm text-dark-green mb-2">
+                                        Subject
+                                    </label>
+                                    <select
+                                        value={formData.subject}
+                                        onChange={handleChange('subject')}
+                                        className={`${inputBaseClasses} border-transparent cursor-pointer`}
+                                    >
+                                        {subjectOptions.map((opt) => (
+                                            <option key={opt} value={opt}>
+                                                {opt}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </motion.div>
+
+                            <motion.div variants={fadeUp} className="mb-5">
+                                <label className="block font-satoshi text-sm text-dark-green mb-2">
+                                    Message<span className="text-red-500">*</span>
+                                </label>
+                                <textarea
+                                    rows={4}
+                                    value={formData.message}
+                                    onChange={handleChange('message')}
+                                    placeholder="Type your message here..."
+                                    className={`${inputBaseClasses} resize-none ${errors.message ? 'border-red-400' : 'border-transparent'}`}
+                                />
+                                {errors.message && (
+                                    <motion.p
+                                        initial={{ opacity: 0, y: -4 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="text-red-500 text-xs mt-1.5 font-satoshi"
+                                    >
+                                        {errors.message}
+                                    </motion.p>
+                                )}
+                            </motion.div>
+
+                            <motion.div variants={fadeUp} className="mb-7">
+                                <label className="flex items-center gap-3 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.agreedToPrivacy}
+                                        onChange={handleChange('agreedToPrivacy')}
+                                        className="h-4 w-4 rounded text-dark-green focus:ring-dark-yellow cursor-pointer"
+                                    />
+                                    <span className="font-satoshi text-xs sm:text-sm text-dark-green/80">
+                                        I agree to the{' '}
+                                        <Link href="/privacy-policy" className="underline hover:text-dark-yellow transition-colors font-medium">
+                                            Privacy Policy
+                                        </Link>
+                                    </span>
+                                </label>
+                                {errors.agreedToPrivacy && (
+                                    <motion.p
+                                        initial={{ opacity: 0, y: -4 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="text-red-500 text-xs mt-1.5 font-satoshi"
+                                    >
+                                        {errors.agreedToPrivacy}
+                                    </motion.p>
+                                )}
+                            </motion.div>
+
+                            <motion.div variants={fadeUp}>
+                                <motion.button
+                                    type="submit"
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    transition={{ duration: 0.25, ease: EASE }}
+                                    className="rounded-full bg-dark-green text-white font-satoshi font-medium px-8 py-3.5 hover:bg-dark-green/90 transition-colors shadow-md"
                                 >
-                                    {errors.email}
-                                </motion.p>
-                            )}
-                        </motion.div>
-
-                        <motion.div variants={fadeUp} className="mb-7">
-                            <label className="block font-satoshi text-sm text-dark-green mb-2">
-                                Message
-                            </label>
-                            <textarea
-                                rows={4}
-                                value={formData.message}
-                                onChange={handleChange('message')}
-                                placeholder="Type here..."
-                                className={`${inputBaseClasses} resize-none border-transparent`}
-                            />
-                        </motion.div>
-
-                        <motion.div variants={fadeUp}>
-                            <motion.button
-                                type="submit"
-                                whileHover={{ scale: 1.03 }}
-                                whileTap={{ scale: 0.97 }}
-                                transition={{ duration: 0.25, ease: EASE }}
-                                className="rounded-full bg-dark-green text-white font-satoshi font-medium px-8 py-3.5"
-                            >
-                                {submitted ? 'Sent!' : 'Submit'}
-                            </motion.button>
-                        </motion.div>
-                    </form>
+                                    Send Message
+                                </motion.button>
+                            </motion.div>
+                        </form>
+                    )}
                 </motion.div>
 
                 <div className="flex flex-col gap-6 lg:gap-8">
@@ -261,7 +337,6 @@ const ContactFormSection = () => {
                             transition={{ duration: 0.35, ease: EASE }}
                             className="relative z-10 mb-6 inline-block"
                         >
-                            {/* Soft blurred halo, pulsing behind the icon */}
                             <motion.span
                                 aria-hidden
                                 animate={{
@@ -272,7 +347,6 @@ const ContactFormSection = () => {
                                 className="absolute inset-0 rounded-full bg-[#25D366] blur-xl"
                             />
 
-                            {/* Expanding ring pulse */}
                             <motion.span
                                 aria-hidden
                                 animate={{
@@ -298,13 +372,15 @@ const ContactFormSection = () => {
                         </p>
 
                         <motion.a
-                            href="#"
+                            href="https://wa.me/919829174973?text=Assalamu%20Alaikum%20%E2%80%94%20I%20would%20like%20to%20know%20more%20about%20Chishty%20Foundation."
+                            target="_blank"
+                            rel="noopener noreferrer"
                             whileHover={{ scale: 1.04 }}
                             whileTap={{ scale: 0.97 }}
                             transition={{ duration: 0.25, ease: EASE }}
                             className="relative z-10 group inline-flex items-center gap-3 rounded-full bg-white pl-5 pr-2 py-2 font-satoshi font-semibold text-dark-green text-sm shadow-sm hover:shadow-md transition-shadow duration-300"
                         >
-                            Chat Now
+                            Chat With Us On WhatsApp
                             <motion.span
                                 whileHover={{ x: 2 }}
                                 transition={{ duration: 0.25, ease: EASE }}

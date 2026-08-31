@@ -83,30 +83,51 @@ const bubbleIcon: Variants = {
 
 /* ---------------- static data ---------------- */
 
-const socialLinks: { icon: ImgSrc; label: string }[] = [
-    { icon: fb, label: 'Facebook' },
-    { icon: insta, label: 'Instagram' },
-    { icon: yt, label: 'YouTube' },
-    { icon: wp, label: 'WhatsApp' },
-    { icon: x, label: 'X' },
+const socialLinks: { icon: ImgSrc; label: string; href: string }[] = [
+    { icon: fb, label: 'Facebook', href: 'https://www.facebook.com/chishtyfoundation/' },
+    { icon: insta, label: 'Instagram', href: 'https://www.instagram.com/chishtyfoundation/' },
+    { icon: yt, label: 'YouTube', href: 'https://www.youtube.com/@SufiMusafir' },
+    { icon: wp, label: 'WhatsApp', href: 'https://wa.me/919829174973' },
+    { icon: x, label: 'X', href: 'https://x.com/sufimusafir' },
 ]
+
+const linkUrlMap: Record<string, string> = {
+    'Our Story': '/about-us',
+    'Our Mission': '/about-us',
+    'Our Impact': '/about-us',
+    'Our Founder': '/about-us',
+    'Our Partners': '/#partners',
+    'News & Updates': '/#events',
+    'Education': '/#what-we-do',
+    'Healthcare': '/#what-we-do',
+    'Women Empowerment': '/#what-we-do',
+    'Livelihood & Skills': '/#what-we-do',
+    'Environment & Sustainability': '/#what-we-do',
+    'Hunger Relief': '/#what-we-do',
+    'Donate Now': '/donation',
+    'Become a Partner': '/contact',
+    'Volunteer With Us': '/get-involved',
+    'Fundraise': '/get-involved',
+    'Corporate Partnership': '/contact',
+    'Campaigns': '/causes',
+}
 
 const footerColumns: { icon: ImgSrc; heading: string; links: string[] }[] = [
     {
         icon: aboutus,
         heading: 'About Us',
-        links: ['Our Story', 'Our Mission', 'Our Impact', 'Our Team', 'Our Partners', 'News & Updates'],
+        links: ['Our Story', 'Our Mission', 'Our Impact', 'Our Founder', 'Our Partners', 'News & Updates'],
     },
     {
         icon: whtawedo,
         heading: 'What We Do',
         links: [
             'Education',
-            'Food & Nutrition',
             'Healthcare',
             'Women Empowerment',
-            'Child Welfare',
-            'Community Support',
+            'Livelihood & Skills',
+            'Environment & Sustainability',
+            'Hunger Relief',
         ],
     },
     {
@@ -114,8 +135,8 @@ const footerColumns: { icon: ImgSrc; heading: string; links: string[] }[] = [
         heading: 'Get Involved',
         links: [
             'Donate Now',
-            'Become a Partner',
             'Volunteer With Us',
+            'Become a Partner',
             'Fundraise',
             'Corporate Partnership',
             'Campaigns',
@@ -123,11 +144,27 @@ const footerColumns: { icon: ImgSrc; heading: string; links: string[] }[] = [
     },
 ]
 
-const contactDetails: { icon: ImgSrc; text: string }[] = [
-    { icon: location, text: '123 Humanity Street, New Delhi, India 110001' },
-    { icon: phone, text: '+91 98765 43210' },
-    { icon: email, text: 'info@humanityfirst.org' },
-    { icon: web, text: 'www.humanityfirst.org' },
+const contactDetails: { icon: ImgSrc; text: string; href?: string }[] = [
+    {
+        icon: location,
+        text: 'Chishty Manzil Sufi Khanqah, Jhalra Street, Dargah Sharif, Ajmer Sharif — 305001, Rajasthan, India',
+        href: 'https://www.google.com/maps/search/?api=1&query=Chishty+Manzil+Sufi+Khanqah+Jhalra+Street+Dargah+Sharif+Ajmer+Sharif',
+    },
+    {
+        icon: phone,
+        text: '+91 145 2429473 · +91 145 2944973',
+        href: 'tel:+911452429473',
+    },
+    {
+        icon: email,
+        text: 'chairman@chishtyfoundation.org · services@chishtyfoundation.org',
+        href: 'mailto:chairman@chishtyfoundation.org',
+    },
+    {
+        icon: web,
+        text: 'chishtyfoundation.org',
+        href: 'https://chishtyfoundation.org',
+    },
 ]
 
 import { usePathname } from 'next/navigation'
@@ -177,8 +214,7 @@ const Footer = () => {
                         </div>
 
                         <p className="text-white/70 text-sm leading-relaxed mt-6 max-w-xs">
-                            We are committed to building a better tomorrow by uplifting
-                            lives, empowering communities, and nurturing hope for all.
+                            We are committed to building a better tomorrow by uplifting lives, empowering communities, and nurturing hope for all.
                         </p>
 
                         <motion.div
@@ -191,7 +227,9 @@ const Footer = () => {
                             {socialLinks.map((social, i) => (
                                 <motion.a
                                     key={social.label}
-                                    href="#"
+                                    href={social.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     aria-label={social.label}
                                     variants={iconPop}
                                     custom={i}
@@ -245,22 +283,25 @@ const Footer = () => {
                                 viewport={{ once: true }}
                                 className="space-y-4"
                             >
-                                {col.links.map((link, i) => (
-                                    <motion.li key={link} variants={linkItem} custom={i}>
-                                        <Link
-                                            href={link === 'Donate Now' ? '/contact' : '#'}
-                                            className="group relative inline-flex items-center text-white/70 text-[15px] transition-colors duration-200 hover:text-dark-yellow"
-                                        >
-                                            <span className="relative">
-                                                {link}
-                                                <span className="pointer-events-none absolute left-0 -bottom-0.5 h-[1.5px] w-0 bg-dark-yellow transition-all duration-300 ease-out group-hover:w-full" />
-                                            </span>
-                                            <span className="ml-0 max-w-0 overflow-hidden text-dark-yellow opacity-0 transition-all duration-300 ease-out group-hover:ml-1.5 group-hover:max-w-[16px] group-hover:opacity-100">
-                                                &#8594;
-                                            </span>
-                                        </Link>
-                                    </motion.li>
-                                ))}
+                                {col.links.map((link, i) => {
+                                    const href = linkUrlMap[link] || '#'
+                                    return (
+                                        <motion.li key={link} variants={linkItem} custom={i}>
+                                            <Link
+                                                href={href}
+                                                className="group relative inline-flex items-center text-white/70 text-[15px] transition-colors duration-200 hover:text-dark-yellow"
+                                            >
+                                                <span className="relative">
+                                                    {link}
+                                                    <span className="pointer-events-none absolute left-0 -bottom-0.5 h-[1.5px] w-0 bg-dark-yellow transition-all duration-300 ease-out group-hover:w-full" />
+                                                </span>
+                                                <span className="ml-0 max-w-0 overflow-hidden text-dark-yellow opacity-0 transition-all duration-300 ease-out group-hover:ml-1.5 group-hover:max-w-[16px] group-hover:opacity-100">
+                                                    &#8594;
+                                                </span>
+                                            </Link>
+                                        </motion.li>
+                                    )
+                                })}
                             </motion.ul>
                         </motion.div>
                     ))}
@@ -295,9 +336,20 @@ const Footer = () => {
                                     className="flex items-start gap-3"
                                 >
                                     <img src={src(detail.icon)} alt="" className="w-5 h-5 mt-0.5 shrink-0" />
-                                    <span className="text-white/80 text-[15px] leading-snug">
-                                        {detail.text}
-                                    </span>
+                                    {detail.href ? (
+                                        <a
+                                            href={detail.href}
+                                            target={detail.href.startsWith('http') ? '_blank' : undefined}
+                                            rel={detail.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                                            className="text-white/80 text-[15px] leading-snug hover:text-dark-yellow transition-colors"
+                                        >
+                                            {detail.text}
+                                        </a>
+                                    ) : (
+                                        <span className="text-white/80 text-[15px] leading-snug">
+                                            {detail.text}
+                                        </span>
+                                    )}
                                 </motion.li>
                             ))}
                         </motion.ul>
@@ -314,15 +366,15 @@ const Footer = () => {
                     className="container mx-auto px-5 md:px-0 py-10 flex flex-col sm:flex-row items-center justify-between gap-4"
                 >
                     <div className="flex items-center gap-4 text-white/70 text-sm">
-                        <span>&#169; 2026 Humanity First. All Rights Reserved.</span>
+                        <span>&#169; 2026 Chishty Foundation. All Rights Reserved.</span>
                         <span className="hidden sm:inline-block h-4 w-px bg-dark-yellow/50" />
-                        <a href="#" className="hover:text-dark-yellow transition-colors">
+                        <Link href="/privacy-policy" className="hover:text-dark-yellow transition-colors">
                             Privacy Policy
-                        </a>
+                        </Link>
                         <span className="hidden sm:inline-block h-4 w-px bg-dark-yellow/50" />
-                        <a href="#" className="hover:text-dark-yellow transition-colors">
+                        <Link href="/terms-and-conditions" className="hover:text-dark-yellow transition-colors">
                             Terms &amp; Conditions
-                        </a>
+                        </Link>
                     </div>
 
                     <div className="flex items-center gap-1.5 text-white/70 text-sm">

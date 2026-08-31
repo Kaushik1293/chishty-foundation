@@ -28,7 +28,7 @@ const reasons: Reason[] = [
     {
         title: 'Support The Needy',
         description:
-            'Your contribution helps us provide food, shelter, education and healthcare to those in need.',
+            'Extend a hand to those who need it most. Your support brings food, shelter, education and hope to families with nowhere else to turn.',
         icon: support,
         iconBg: 'bg-dark-yellow',
         ringColor: 'border-dark-yellow',
@@ -37,7 +37,7 @@ const reasons: Reason[] = [
     {
         title: 'Strengthen Your Faith',
         description:
-            "Sadaqah and service purify the heart and bring us closer to Allah's blessings.",
+            'At Chishty Foundation we believe faith deepens through selfless action. Serve with us and feel the link between compassion and devotion.',
         icon: faith,
         iconBg: 'bg-dark-green',
         ringColor: 'border-dark-green',
@@ -46,7 +46,7 @@ const reasons: Reason[] = [
     {
         title: 'Preserve Our Heritage',
         description:
-            'Help us protect and preserve the spiritual and cultural legacy for future generations.',
+            'We safeguard the spiritual, cultural and architectural legacy of the Chishty Sufi tradition through restoration, documentation and awareness.',
         icon: heritage,
         iconBg: 'bg-[#8A1538]',
         ringColor: 'border-[#8A1538]',

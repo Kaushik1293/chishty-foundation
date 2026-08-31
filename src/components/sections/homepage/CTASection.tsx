@@ -139,16 +139,15 @@ const CTASection = () => {
                             eyebrow="TOGETHER, WE CAN"
                             title={
                                 <>
-                                    Your Support <br />
-                                    <span style={{ color: GOLD }}>Their Tomorrow</span>
+                                    Every Act Of Kindness <br />
+                                    <span style={{ color: GOLD }}>Reaches Someone</span>
                                 </>
                             }
                             titleColor={DARK_GREEN}
                             description={
                                 <>
                                     <p className="font-medium" style={{ color: DARK_GREEN }}>
-                                        Every act of kindness creates a ripple of hope.{' '}
-                                        <br className="hidden md:block" /> Be the reason someone smiles today.
+                                        Your contribution becomes a meal served, a child in school, a patient treated. Give today and let the work continue.
                                     </p>
                                     <p style={{ color: LIGHT_GREEN }} className="font-semibold text-lg sm:text-xl pt-2">
                                         Be the change. Be the hope.
