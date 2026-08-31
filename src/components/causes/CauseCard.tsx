@@ -12,6 +12,9 @@ interface CauseCardProps {
 const EASE = [0.16, 1, 0.3, 1] as const;
 
 export default function CauseCard({ cause, index }: CauseCardProps) {
+  const causeTitle = (cause as any).title || null;
+  const cleanDescription = (cause.description || "").replace(/I prefer this response/gi, "").trim();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -24,7 +27,7 @@ export default function CauseCard({ cause, index }: CauseCardProps) {
         {cause.image ? (
           <img
             src={cause.image}
-            alt="Campaign"
+            alt={causeTitle || "Campaign"}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
           />
         ) : (
@@ -38,9 +41,14 @@ export default function CauseCard({ cause, index }: CauseCardProps) {
       </div>
 
       <div className="w-[90%] bg-white/95 backdrop-blur-md -mt-16 relative z-10 p-6 md:p-8 rounded-3xl shadow-[0_20px_40px_rgba(13,39,80,0.06)] border border-white group-hover:-translate-y-3 transition-transform duration-500 ease-out flex-1 flex flex-col">
-        <div className="w-12 h-1.5 bg-linear-to-r from-dark-yellow to-rust-orange mb-5 rounded-full" />
-        <p className="text-dark-green/80 text-[15px] leading-relaxed text-justify flex-1">
-          {cause.description}
+        <div className="w-12 h-1.5 bg-linear-to-r from-dark-yellow to-rust-orange mb-4 rounded-full" />
+        {causeTitle && (
+          <h3 className="font-cormorant font-bold text-2xl text-dark-green mb-3">
+            {causeTitle}
+          </h3>
+        )}
+        <p className="text-dark-green/80 text-[15px] leading-relaxed flex-1">
+          {cleanDescription}
         </p>
       </div>
     </motion.div>

@@ -49,13 +49,13 @@ const GetInvolvedHero = () => {
                             eyebrow="GET INVOLVED"
                             title={
                                 <>
-                                    Be The Reason <br className="hidden sm:block" />
-                                    <span className="text-dark-yellow">Hope Lives On</span>
+                                    Get Involved, <br className="hidden sm:block" />
+                                    <span className="text-dark-yellow">Make An Impact</span>
                                 </>
                             }
                             description={
                                 <p className="max-w-190 font-medium leading-loose text-dark-green">
-                                    Join hands with us and be a part of a compassionate community working towards a better tomorrow.
+                                    Whether through volunteering, donating or spreading awareness, your involvement drives real change in the lives of those we serve.
                                 </p>
                             }
                         />

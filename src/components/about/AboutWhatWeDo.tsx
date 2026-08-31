@@ -107,32 +107,32 @@ type Program = {
 const programs: Program[] = [
     {
         title: 'Education',
-        description: 'Empowering minds through quality education for all.',
+        description: 'Scholarships, school fee support, uniforms and learning materials for children who would otherwise miss out on school.',
         icon: educationIcon,
     },
     {
         title: 'Healthcare',
-        description: 'Empowering minds through quality education for all.',
+        description: 'Free health check-ups, diagnostic camps and essential medicines for families unable to afford basic medical care.',
         icon: healthcareIcon,
     },
     {
         title: 'Women Empowerment',
-        description: 'Empowering minds through quality education for all.',
+        description: 'Vocational skills, tailoring centres and financial literacy that help women earn with dignity and support their families.',
         icon: womenIcon,
     },
     {
-        title: 'Livelihood & Skill Development',
-        description: 'Empowering minds through quality education for all.',
+        title: 'Livelihood & Skills',
+        description: 'Practical training, toolkits and mentorship helping youth and daily-wage earners build stable, resilient incomes.',
         icon: skillIcon,
     },
     {
         title: 'Environment & Sustainability',
-        description: 'Empowering minds through quality education for all.',
+        description: 'Tree plantations, water conservation drives and clean energy awareness across local communities.',
         icon: environmentIcon,
     },
     {
         title: 'Hunger Relief',
-        description: 'Empowering minds through quality education for all.',
+        description: 'Daily langar, food drives and dry ration distribution ensuring no one in our reach goes to sleep hungry.',
         icon: hungerIcon,
     },
 ];
@@ -374,7 +374,7 @@ const AboutWhatWeDo = () => {
                             <Image src={qouteIcon.src} alt="qouteIcon" width={44} height={44} />
                         </motion.div>
                         <p className="font-satoshi text-white text-xl leading-snug">
-                            &ldquo;Service To Humanity Is Service To The Divine.&rdquo;
+                            &ldquo;Love Towards All, Malice Towards None.&rdquo;
                         </p>
                     </div>
 
@@ -384,7 +384,7 @@ const AboutWhatWeDo = () => {
                         <Image src={mosqueIcon} alt="mosqueIcon" width={44} height={44} />
                         <div>
                             <p className="font-satoshi text-light-yellow text-sm">Inspired By The Spirit Of</p>
-                            <p className="font-satoshi text-light-yellow font-bold text-lg">Ajmer Sharif Dargah</p>
+                            <p className="font-satoshi text-light-yellow font-bold text-base md:text-lg">Hazrat Khwaja Moinuddin Hasan Chishty (R.A.), Ajmer Sharif</p>
                         </div>
                     </div>
 

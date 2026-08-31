@@ -64,8 +64,8 @@ const AboutHeroBanner = () => {
                             variants={fadeUp}
                             className="font-cormorant text-dark-yellow text-3xl md:text-4xl leading-snug mb-6"
                         >
-                            Rooted In Faith.<br />
-                            Driven By Compassion.
+                            A Legacy Of Love, <br />
+                            Service And Unity
                         </motion.p>
 
                         <motion.div variants={fadeUp} className="flex items-center gap-4 mb-6 max-w-md">
@@ -86,8 +86,7 @@ const AboutHeroBanner = () => {
                             variants={fadeUp}
                             className="font-satoshi text-dark-green/80 text-base md:text-lg leading-relaxed mb-10 max-w-md"
                         >
-                            For over 17 years, Chishty Foundation has been a beacon of hope, working
-                            tirelessly to uplift communities and create lasting change.
+                            Since 2007, carrying the message of Khwaja Gharib Nawaz (R.A.) from Ajmer Sharif to the world.
                         </motion.p>
 
                         <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-8">

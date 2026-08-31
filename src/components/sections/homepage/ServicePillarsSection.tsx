@@ -30,7 +30,7 @@ const pillars = [
         icon: educationIcon,
         icon2: educationIcon2,
         title: "Education",
-        description: "Empowering minds through quality education and creating opportunities for a brighter future.",
+        description: "Scholarships, school support and learning resources for children who would otherwise go without.",
         bgColor: "#16264A",
         accentColor: "#16264A",
     },
@@ -39,27 +39,27 @@ const pillars = [
         icon: healthcareIcon,
         icon2: healthcareIcon2,
         title: "Healthcare",
-        description: "Providing accessible healthcare services and promoting health and well-being for all.",
+        description: "Free medical camps and treatment support for families in and around Ajmer.",
         bgColor: "#0F3D2E",
         accentColor: "#0F3D2E",
-    },
-    {
-        image: donationImg,
-        icon: donationIcon,
-        icon2: donationIcon2,
-        title: "Donation",
-        description: "Your support helps us bring hope, relief, and change to those who need it most.",
-        bgColor: "#B85B2B",
-        accentColor: "#B85B2B",
     },
     {
         image: womenEmpowermentImg,
         icon: womenEmpowermentIcon,
         icon2: womenEmpowermentIcon2,
         title: "Women Empowerment",
-        description: "Empowering women with skills, resources, and opportunities to lead independent, dignified lives.",
+        description: "Skills, training and livelihoods so women can stand independently.",
         bgColor: "#7A1748",
         accentColor: "#7A1748",
+    },
+    {
+        image: donationImg,
+        icon: donationIcon,
+        icon2: donationIcon2,
+        title: "Hunger Relief",
+        description: "Daily langar, ration kits and community kitchens — no one turned away.",
+        bgColor: "#B85B2B",
+        accentColor: "#B85B2B",
     },
 ];
 
@@ -70,7 +70,7 @@ const ServicePillarsSection = () => {
                 <SectionHeading
                     eyebrow="WHAT WE FOCUS ON"
                     title="Our Service Pillars"
-                    description="Guided by compassion and rooted in service, we work across key areas to uplift lives and build a better world."
+                    description="Four pillars carry the whole of our work, rooted in Khidmat-e-Khalq — service to creation."
                 />
 
                 <div className="mt-14 md:mt-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">

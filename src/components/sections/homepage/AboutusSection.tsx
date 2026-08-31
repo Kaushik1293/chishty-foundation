@@ -21,6 +21,7 @@ import mealsDistributed from '../../../assets/images/homepage/aboutsection/meals
 import studentsSupported from '../../../assets/images/homepage/aboutsection/students-supported.svg'
 import medicalCamps from '../../../assets/images/homepage/aboutsection/meals-distributed.svg'
 import SectionHeading from '../../common/SectionHeading'
+import { impactStats } from '@/src/data/impactStats'
 
 /* ---------------- helpers ---------------- */
 
@@ -72,17 +73,18 @@ const imgReveal: Variants = {
 /* ---------------- count-up number ---------------- */
 
 interface CountUpProps {
-    target: number
+    target: number | null
     suffix?: string
+    decimals?: number
 }
 
-const CountUp: React.FC<CountUpProps> = ({ target, suffix = '' }) => {
+const CountUp: React.FC<CountUpProps> = ({ target, suffix = '', decimals = 0 }) => {
     const ref = useRef<HTMLSpanElement>(null)
     const inView = useInView(ref, { once: true, margin: '-40px' })
     const [value, setValue] = useState(0)
 
     useEffect(() => {
-        if (!inView) return
+        if (!inView || target === null || target === undefined) return
         const numeric = target
         const duration = 1400
         const start = performance.now()
@@ -96,7 +98,11 @@ const CountUp: React.FC<CountUpProps> = ({ target, suffix = '' }) => {
         requestAnimationFrame(tick)
     }, [inView, target])
 
-    const display = target % 1 !== 0 ? value.toFixed(1) : Math.round(value)
+    if (target === null || target === undefined) {
+        return <span ref={ref}>—</span>
+    }
+
+    const display = decimals > 0 || target % 1 !== 0 ? value.toFixed(decimals || 1) : Math.round(value)
 
     return (
         <span ref={ref}>
@@ -115,13 +121,6 @@ const galleryImages: { src: ImgSrc; radius: string }[] = [
     { src: about2, radius: 'rounded-tr-[36px]' },
     { src: about3, radius: 'rounded-bl-[36px]' },
     { src: about4, radius: 'rounded-br-[36px]' },
-]
-
-const stats: { icon: ImgSrc; value: number; suffix: string; label: string }[] = [
-    { icon: liveImpact, value: 450, suffix: 'K+', label: 'Lives Impacted' },
-    { icon: mealsDistributed, value: 2.5, suffix: 'M+', label: 'Meals Distributed' },
-    { icon: studentsSupported, value: 15, suffix: 'K+', label: 'Students Supported' },
-    { icon: medicalCamps, value: 850, suffix: '+', label: 'Medical Camps' },
 ]
 
 const AboutusSection = () => {
@@ -148,7 +147,7 @@ const AboutusSection = () => {
                                     </span>
                                 </>
                             }
-                            description="Chishty Foundation is a non-profit organization dedicated to serving humanity through compassion, education, healthcare, and empowerment. Inspired by the timeless teachings of Khwaja Moinuddin Chishti (R.A), we work to uplift communities, restore dignity, and create opportunities for a better tomorrow."
+                            description="Chishty Foundation is a non-profit organisation serving humanity through compassion, education, healthcare and empowerment. Inspired by the timeless teachings of Hazrat Khwaja Moinuddin Hasan Chishty (R.A.), we work to uplift communities, restore dignity and create opportunities for a better tomorrow."
                         />
 
 
@@ -321,7 +320,7 @@ const AboutusSection = () => {
                                 </div>
 
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-4 flex-1">
-                                    {stats.map((stat, i) => (
+                                    {impactStats.map((stat, i) => (
                                         <motion.div
                                             key={stat.label}
                                             initial={{ opacity: 0, y: 16 }}
@@ -338,15 +337,14 @@ const AboutusSection = () => {
                                             </motion.div>
 
                                             <p className="text-white font-bold text-3xl">
-                                                <CountUp target={stat.value} suffix={stat.suffix} />
+                                                <CountUp target={stat.value} suffix={stat.suffix} decimals={stat.decimals} />
                                             </p>
 
                                             <p className="text-white/80 text-sm font-medium">
                                                 {stat.label}
                                             </p>
 
-
-                                            {i !== stats.length - 1 && (
+                                            {i !== impactStats.length - 1 && (
                                                 <div
                                                     className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-32"
                                                     style={{

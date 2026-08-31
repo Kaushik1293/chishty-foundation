@@ -16,7 +16,6 @@ const HeartIcon = () => (
     </svg>
 );
 
-
 const containerVariants: Variants = {
     hidden: {},
     visible: {
@@ -29,13 +28,12 @@ const fadeUp: Variants = {
     visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE } },
 };
 
-const CauseHeroSection = () => {
+const GalleryHero = () => {
     return (
         <section className="relative">
             <div className="relative overflow-hidden pb-28">
                 <div className="absolute inset-0 bg-dark-green">
-                    <Image src={sectionbg} alt="Ajmer Sharif Dargah at night" fill priority className="object-cover" />
-
+                    <Image src={sectionbg} alt="Chishty Foundation Gallery" fill priority className="object-cover" />
                 </div>
 
                 <motion.div
@@ -48,22 +46,22 @@ const CauseHeroSection = () => {
                         <motion.div variants={fadeUp} className="pt-10">
                             <SectionHeading
                                 align="left"
-                                eyebrow="SERVING WITH COMPASSION"
+                                eyebrow="MOMENTS OF SERVICE"
                                 title={
                                     <>
-                                        Causes &amp; <span className="text-dark-yellow">Campaigns</span>
+                                        Programme &amp; <span className="text-dark-yellow">Field Gallery</span>
                                     </>
                                 }
-                                description="The work we are called to — harmony between faiths, service without expectation, and dignity for every life."
+                                description="Glimpses of Khidmat-e-Khalq in action — from daily langar and education at Bab ul Ilm to medical camps and interfaith peace initiatives."
                             />
                         </motion.div>
 
                         <motion.div variants={fadeUp} className="mt-8 flex justify-center md:justify-start">
-                            <Link href="/contact">
+                            <Link href="/donate">
                                 <PrimaryButton
                                     containerClassName="!bg-dark-yellow shadow-md hover:shadow-xl transition-shadow duration-300"
                                     iconWrapperClassName="!bg-dark-green"
-                                    text="Support Our Cause"
+                                    text="Support Our Work"
                                     icon={<HeartIcon />}
                                 />
                             </Link>
@@ -71,9 +69,8 @@ const CauseHeroSection = () => {
                     </div>
                 </motion.div>
             </div>
-
         </section>
     );
 };
 
-export default CauseHeroSection;
+export default GalleryHero;

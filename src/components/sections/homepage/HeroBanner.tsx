@@ -17,11 +17,11 @@ import twitter from '../../../assets/images/homepage/vectors/social-media/x-gold
 import quotes from '../../../assets/images/homepage/vectors/common/quotes-icon.svg';
 
 const socialLinks = [
-    { icon: fb, label: 'Facebook', href: '#' },
-    { icon: insta, label: 'Instagram', href: '#' },
-    { icon: youtube, label: 'YouTube', href: '#' },
-    { icon: wp, label: 'WhatsApp', href: '#' },
-    { icon: twitter, label: 'X', href: '#' },
+    { icon: fb, label: 'Facebook', href: 'https://www.facebook.com/chishtyfoundation/' },
+    { icon: insta, label: 'Instagram', href: 'https://www.instagram.com/chishtyfoundation/' },
+    { icon: youtube, label: 'YouTube', href: 'https://www.youtube.com/@SufiMusafir' },
+    { icon: wp, label: 'WhatsApp', href: 'https://wa.me/919829174973' },
+    { icon: twitter, label: 'X', href: 'https://x.com/sufimusafir' },
 ];
 
 
@@ -128,6 +128,8 @@ const MagneticSocialIcon = ({ social, index }: { social: SocialLink; index: numb
             ref={ref}
             href={social.href}
             aria-label={social.label}
+            target="_blank"
+            rel="noopener noreferrer"
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             variants={socialIconVariants}
@@ -451,11 +453,10 @@ const HeroBanner = () => {
                             <Image src={quotes} alt="" width={28} height={22} className="mb-3" />
                         </motion.div>
                         <p className="font-satoshi text-dark-green text-sm md:text-base leading-relaxed font-medium mb-4 md:max-w-sm">
-                            Service to humanity is service to the divine. Every act of kindness,
-                            compassion, and generosity brings us closer to the Creator.
+                            &ldquo;Love Towards All, Malice Towards None.&rdquo;
                         </p>
                         <p className="font-dancing-script text-dark-yellow text-lg font-bold">
-                            – Khwaja Moinuddin Chishti (R.A)
+                            — Sultan ul Hind, Hazrat Khwaja Moinuddin Hasan Chishty (R.A.)
                         </p>
                     </motion.div>
                     <motion.div

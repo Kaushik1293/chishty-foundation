@@ -18,25 +18,30 @@ export interface CauseRecord {
 export async function getCauses(options?: {
   isActiveOnly?: boolean;
 }) {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  let query = supabase
-    .from("causes")
-    .select("*")
-    .order("display_order", { ascending: true, nullsFirst: false });
+    let query = supabase
+      .from("causes")
+      .select("*")
+      .order("display_order", { ascending: true, nullsFirst: false });
 
-  if (options?.isActiveOnly) {
-    query = query.eq("is_active", true);
+    if (options?.isActiveOnly) {
+      query = query.eq("is_active", true);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Error fetching causes:", error);
+      return [];
+    }
+
+    return (data || []) as CauseRecord[];
+  } catch (error) {
+    console.error("Failed to connect or fetch causes:", error);
+    return [];
   }
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.error("Error fetching causes:", error);
-    throw new Error(error.message);
-  }
-
-  return data as CauseRecord[];
 }
 
 /**

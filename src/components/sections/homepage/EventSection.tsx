@@ -9,9 +9,10 @@ import moment from "moment";
 import SectionHeading from '../../common/SectionHeading'
 import PrimaryButton from '../../common/PrimaryButton'
 import { IEvent } from '@/src/types'
+import { defaultEvents } from '@/src/data/defaultEvents'
 
 interface IEventSection {
-  events: IEvent[]
+  events?: IEvent[]
 }
 
 const fadeUp: Variants = {
@@ -36,6 +37,8 @@ const ArrowIcon = ({ color = 'white' }: { color?: string }) => (
 )
 
 const EventSection: React.FC<IEventSection> = ({ events }) => {
+  const displayEvents = events && events.length > 0 ? events : defaultEvents;
+
   return (
     <section className="relative pb-25 bg-white overflow-hidden">
 
@@ -132,7 +135,7 @@ const EventSection: React.FC<IEventSection> = ({ events }) => {
           viewport={{ once: true, amount: 0.2 }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-16"
         >
-          {events.map((event, i) => (
+          {displayEvents.map((event, i) => (
             <motion.div
               key={event.title}
               variants={fadeUp}
@@ -156,7 +159,7 @@ const EventSection: React.FC<IEventSection> = ({ events }) => {
                 />
                 <span className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/60 backdrop-blur-lg text-dark-green text-xs font-semibold px-3 py-1.5 rounded-full">
                   <CalendarIcon />
-                  {event.event_date && moment(event.event_date).format("MMM YYYY").toUpperCase()}
+                  {event.event_date && (moment(event.event_date, "YYYY-MM-DD", true).isValid() ? moment(event.event_date).format("MMM YYYY").toUpperCase() : event.event_date.toUpperCase())}
                 </span>
               </div>
 

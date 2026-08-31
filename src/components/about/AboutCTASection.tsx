@@ -190,41 +190,27 @@ const AboutCTASection = () => {
                         className="font-satoshi text-base md:text-lg max-w-md"
                         style={{ color: DARK_GREEN, opacity: 0.85 }}
                     >
-                        Your support can transform lives and build a better tomorrow.
+                        Give, volunteer or partner with us — every hand raised in service carries the work further.
                     </motion.p>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 14 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6, ease: EASE, delay: 0.4 }}
-                        className="relative"
-                    >
-
-                        <motion.span
-                            aria-hidden
-                            className="pointer-events-none absolute inset-0 rounded-full"
-                            style={{ backgroundColor: '#EEAE46' }}
-                            animate={{ opacity: [0.35, 0, 0.35], scale: [1, 1.35, 1] }}
-                            transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-                        />
-
-                        <motion.div
-                            whileHover={{ scale: 1.05, y: -2 }}
-                            whileTap={{ scale: 0.96 }}
-                            transition={{ duration: 0.3, ease: EASE }}
-                            className="relative"
-                        >
-                            <Link href="/contact">
-                                <PrimaryButton
-                                    containerClassName="!bg-[#EEAE46] shadow-md hover:shadow-xl transition-shadow duration-300"
-                                    iconWrapperClassName="!bg-dark-green"
-                                    text="Get Involved Today"
-                                    icon={<ArrowIcon />}
-                                />
-                            </Link>
-                        </motion.div>
-                    </motion.div>
+                    <div className="flex flex-wrap items-center gap-4 justify-center lg:justify-start">
+                        <Link href="/donate">
+                            <PrimaryButton
+                                containerClassName="!bg-[#EEAE46] shadow-md hover:shadow-xl transition-shadow duration-300"
+                                iconWrapperClassName="!bg-dark-green"
+                                text="Donate Now"
+                                icon={<ArrowIcon />}
+                            />
+                        </Link>
+                        <Link href="/get-involved">
+                            <PrimaryButton
+                                containerClassName="!bg-dark-green border border-dark-yellow/30 shadow-md hover:shadow-xl transition-shadow duration-300"
+                                iconWrapperClassName="!bg-dark-yellow"
+                                text="Get Involved"
+                                icon={<ArrowIcon />}
+                            />
+                        </Link>
+                    </div>
 
                     <motion.p
                         initial={{ opacity: 0, y: 8 }}
@@ -234,7 +220,7 @@ const AboutCTASection = () => {
                         className="font-satoshi text-sm italic"
                         style={{ color: DARK_GREEN, opacity: 0.6 }}
                     >
-                        Thank you for considering - every bit of support means the world to us.
+                        Thank you for considering — every bit of support means the world to us.
                     </motion.p>
                 </div>
             </motion.div>
