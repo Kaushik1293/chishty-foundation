@@ -4,30 +4,38 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-  Calendar, Users, Heart, Plus, ArrowRight, TrendingUp, Award, Globe, Database, CheckCircle2, Clock, Sparkles, Star, ExternalLink, Loader2, RefreshCw,
+  Calendar, Users, Heart, Plus, ArrowRight, TrendingUp, Award, Globe, Database, CheckCircle2, Clock, Sparkles, Star, ExternalLink, Loader2, RefreshCw, BookOpen, Image as ImageIcon
 } from "lucide-react";
 import { getEvents, Event as SupabaseEvent } from "@/app/(web)/action";
 import { getPartners, PartnerRecord } from "@/app/(asgard)/asgard/partners/actions";
 import { getCauses, CauseRecord } from "@/app/(asgard)/asgard/causes/actions";
+import { getInsights, InsightRecord } from "@/app/(asgard)/asgard/insights/actions";
+import { getMedia, MediaRecord } from "@/app/(asgard)/asgard/media/actions";
 import { formatDateDDMMYYYY } from "@/src/utils/formatDate";
 
 export default function AsgardDashboardPage() {
   const [events, setEvents] = useState<SupabaseEvent[]>([]);
   const [partners, setPartners] = useState<PartnerRecord[]>([]);
   const [causes, setCauses] = useState<CauseRecord[]>([]);
+  const [insights, setInsights] = useState<InsightRecord[]>([]);
+  const [media, setMedia] = useState<MediaRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadDashboardData = async () => {
     setIsLoading(true);
     try {
-      const [eventsData, partnersData, causesData] = await Promise.all([
+      const [eventsData, partnersData, causesData, insightsData, mediaData] = await Promise.all([
         getEvents(),
         getPartners(),
         getCauses(),
+        getInsights(),
+        getMedia(),
       ]);
       setEvents(eventsData);
       setPartners(partnersData);
       setCauses(causesData);
+      setInsights(insightsData);
+      setMedia(mediaData);
     } catch (err) {
       console.error("Error loading dashboard metrics from Supabase:", err);
     } finally {
@@ -48,6 +56,12 @@ export default function AsgardDashboardPage() {
 
   const totalCauses = causes.length;
   const activeCauses = causes.filter((c) => c.is_active).length;
+
+  const totalInsights = insights.length;
+  const activeInsights = insights.filter((i) => i.is_active).length;
+
+  const totalMedia = media.length;
+  const activeMedia = media.filter((m) => m.is_active).length;
 
   const stats = [
     {
@@ -81,14 +95,24 @@ export default function AsgardDashboardPage() {
       href: "/asgard/causes",
     },
     {
-      title: "Featured Events",
-      value: isLoading ? "..." : String(featuredEvents),
-      subtitle: "High Priority Campaigns",
-      icon: Star,
+      title: "Insights",
+      value: isLoading ? "..." : String(totalInsights),
+      subtitle: `${activeInsights} Active Publications`,
+      icon: BookOpen,
       color: "from-blue-500/20 to-indigo-500/20",
       borderColor: "border-blue-500/40",
       iconColor: "text-blue-600",
-      href: "/asgard/events",
+      href: "/asgard/insights",
+    },
+    {
+      title: "Media Assets",
+      value: isLoading ? "..." : String(totalMedia),
+      subtitle: `${activeMedia} Active In Gallery`,
+      icon: ImageIcon,
+      color: "from-purple-500/20 to-violet-500/20",
+      borderColor: "border-purple-500/40",
+      iconColor: "text-purple-600",
+      href: "/asgard/media",
     },
   ];
 
@@ -111,7 +135,7 @@ export default function AsgardDashboardPage() {
           </h2>
 
           <p className="text-base sm:text-lg text-white/90 leading-relaxed font-normal">
-            Manage Chishty Foundation’s dynamic Events and Partner network in real-time.
+            Manage Chishty Foundation’s Events, Partners, Causes, Insights, and Media in real-time.
           </p>
 
           <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -139,6 +163,22 @@ export default function AsgardDashboardPage() {
               <span>Causes ({totalCauses})</span>
             </Link>
 
+            <Link
+              href="/asgard/insights"
+              className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm transition-all flex items-center gap-2"
+            >
+              <BookOpen className="w-4 h-4 text-light-yellow" />
+              <span>Insights ({totalInsights})</span>
+            </Link>
+
+            <Link
+              href="/asgard/media"
+              className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm transition-all flex items-center gap-2"
+            >
+              <ImageIcon className="w-4 h-4 text-light-yellow" />
+              <span>Media ({totalMedia})</span>
+            </Link>
+
             <button
               onClick={loadDashboardData}
               className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm transition-colors ml-auto cursor-pointer flex items-center gap-1.5"
@@ -151,7 +191,7 @@ export default function AsgardDashboardPage() {
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (
@@ -182,9 +222,9 @@ export default function AsgardDashboardPage() {
                   </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-stroke/60 flex items-center justify-between text-xs sm:text-sm">
-                  <span className="text-dark-green/80 font-medium">{stat.subtitle}</span>
-                  <ArrowRight className="w-4 h-4 text-dark-yellow group-hover:translate-x-1 transition-transform" />
+                <div className="mt-4 pt-3 border-t border-stroke/60 flex items-center justify-between text-xs">
+                  <span className="text-dark-green/80 font-medium truncate">{stat.subtitle}</span>
+                  <ArrowRight className="w-4 h-4 text-dark-yellow group-hover:translate-x-1 transition-transform shrink-0" />
                 </div>
               </Link>
             </motion.div>
@@ -249,6 +289,62 @@ export default function AsgardDashboardPage() {
                 >
                   <div className="mt-4 flex items-center justify-between text-xs font-semibold text-dark-green group-hover:text-dark-yellow transition-colors">
                     <span>Open Partners</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </div>
+                </Link>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -4 }}
+              className="p-6 rounded-2xl bg-white border border-stroke shadow-sm hover:shadow-lg transition-all flex flex-col justify-between"
+            >
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-xl bg-emerald-700 text-white flex items-center justify-center shadow-md">
+                  <BookOpen className="w-6 h-6 text-white" />
+                </div>
+                <h4 className="font-bold text-dark-green text-sm mb-1 group-hover:text-dark-yellow transition-colors">
+                  Insights
+                </h4>
+                <p className="text-sm text-dark-green/80 leading-relaxed font-normal">
+                  Publish foundation articles, research publications, document attachments, and category insights.
+                </p>
+              </div>
+
+              <div className="pt-6">
+                <Link
+                  href="/asgard/insights"
+                >
+                  <div className="mt-4 flex items-center justify-between text-xs font-semibold text-dark-green group-hover:text-dark-yellow transition-colors">
+                    <span>Open Insights</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </div>
+                </Link>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ y: -4 }}
+              className="p-6 rounded-2xl bg-white border border-stroke shadow-sm hover:shadow-lg transition-all flex flex-col justify-between"
+            >
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-xl bg-purple-700 text-white flex items-center justify-center shadow-md">
+                  <ImageIcon className="w-6 h-6 text-white" />
+                </div>
+                <h4 className="font-bold text-dark-green text-sm mb-1 group-hover:text-dark-yellow transition-colors">
+                  Media & Gallery
+                </h4>
+                <p className="text-sm text-dark-green/80 leading-relaxed font-normal">
+                  Manage photos, gallery assets, alt text, and captions for the Chishty Foundation gallery.
+                </p>
+              </div>
+
+              <div className="pt-6">
+                <Link
+                  href="/asgard/media"
+                >
+                  <div className="mt-4 flex items-center justify-between text-xs font-semibold text-dark-green group-hover:text-dark-yellow transition-colors">
+                    <span>Open Media</span>
                     <ExternalLink className="w-3.5 h-3.5" />
                   </div>
                 </Link>

@@ -22,6 +22,8 @@ import {
   Users,
   LogOut,
   RefreshCw,
+  BookOpen,
+  Image as ImageIcon,
 } from "lucide-react";
 
 interface AdminHeaderProps {
@@ -86,6 +88,16 @@ export default function AdminHeader({ onMobileMenuToggle }: AdminHeaderProps) {
       return {
         title: "Partners Management",
         subtitle: "Manage sponsors, NGO alliances, and global partners",
+      };
+    if (pathname.includes("/asgard/insights") || pathname.includes("/insights"))
+      return {
+        title: "Insights & Articles",
+        subtitle: "Manage foundation research, publications, and articles",
+      };
+    if (pathname.includes("/asgard/media") || pathname.includes("/media"))
+      return {
+        title: "Media & Gallery",
+        subtitle: "Manage gallery assets, photos, captions, and display order",
       };
     if (pathname === "/asgard")
       return {
@@ -203,6 +215,22 @@ export default function AdminHeader({ onMobileMenuToggle }: AdminHeaderProps) {
                     >
                       <Heart className="w-4 h-4 text-dark-yellow" />
                       <span>Causes & Campaigns</span>
+                    </Link>
+                    <Link
+                      href="/asgard/insights"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-xs text-dark-green hover:bg-dark-green/5 rounded-xl transition-colors font-medium"
+                    >
+                      <BookOpen className="w-4 h-4 text-dark-yellow" />
+                      <span>Insights & Articles</span>
+                    </Link>
+                    <Link
+                      href="/asgard/media"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-xs text-dark-green hover:bg-dark-green/5 rounded-xl transition-colors font-medium"
+                    >
+                      <ImageIcon className="w-4 h-4 text-dark-yellow" />
+                      <span>Media & Gallery</span>
                     </Link>
                   </div>
 

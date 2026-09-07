@@ -11,9 +11,18 @@ interface ImageUploaderProps {
   placeholder?: string;
   className?: string;
   previewBgColor?: string;
+  bucket?: string;
 }
 
-export default function ImageUploader({ label, value, onChange, placeholder = "Drag and drop an image, or click to browse", className = "", previewBgColor }: ImageUploaderProps) {
+export default function ImageUploader({
+  label,
+  value,
+  onChange,
+  placeholder = "Drag and drop an image, or click to browse",
+  className = "",
+  previewBgColor,
+  bucket = "media",
+}: ImageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -55,12 +64,13 @@ export default function ImageUploader({ label, value, onChange, placeholder = "D
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("bucket", bucket);
 
-      const res = await uploadFile(formData);
+      const res = await uploadFile(formData, bucket);
       if (res.success && res.url) {
         onChange(res.url);
       } else {
-        alert(res.error || "Failed to upload image");
+        alert(res.error || "Failed to upload image to storage");
       }
     } catch (err: any) {
       alert("Error uploading file: " + err.message);

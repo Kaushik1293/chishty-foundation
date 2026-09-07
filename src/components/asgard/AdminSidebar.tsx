@@ -17,7 +17,9 @@ import {
   Heart,
   ChevronLeft,
   ExternalLink,
-  ShieldCheck
+  ShieldCheck,
+  BookOpen,
+  Image as ImageIcon
 } from "lucide-react";
 
 import whiteLogo from "../../assets/images/homepage/white-logo.png";
@@ -31,6 +33,7 @@ interface AdminSidebarProps {
 }
 
 import { createClient } from "@/src/utils/supabase/client";
+import { getSidebarCounts } from "@/app/(asgard)/asgard/counts";
 import { useEffect } from "react";
 
 export default function AdminSidebar({
@@ -50,28 +53,32 @@ export default function AdminSidebar({
   const [eventsCount, setEventsCount] = useState<number>(0);
   const [partnersCount, setPartnersCount] = useState<number>(0);
   const [causesCount, setCausesCount] = useState<number>(0);
+  const [insightsCount, setInsightsCount] = useState<number>(0);
+  const [mediaCount, setMediaCount] = useState<number>(0);
 
   const supabase = createClient();
 
   useEffect(() => {
     async function getUserAndCounts() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserEmail(user.email || null);
-        setUserName(user.user_metadata?.full_name || user.email?.split("@")[0] || "Administrator");
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setUserEmail(user.email || null);
+          setUserName(user.user_metadata?.full_name || user.email?.split("@")[0] || "Administrator");
+        }
+
+        const counts = await getSidebarCounts();
+        setEventsCount(counts.events);
+        setPartnersCount(counts.partners);
+        setCausesCount(counts.causes);
+        setInsightsCount(counts.insights);
+        setMediaCount(counts.media);
+      } catch (err) {
+        console.error("Error refreshing sidebar counts:", err);
       }
-
-      const { count: eCount } = await supabase.from('events').select('*', { count: 'exact', head: true });
-      if (eCount !== null) setEventsCount(eCount);
-
-      const { count: pCount } = await supabase.from('partners').select('*', { count: 'exact', head: true });
-      if (pCount !== null) setPartnersCount(pCount);
-
-      const { count: cCount } = await supabase.from('causes').select('*', { count: 'exact', head: true });
-      if (cCount !== null) setCausesCount(cCount);
     }
     getUserAndCounts();
-  }, []);
+  }, [pathname]);
 
   const navItems = [
     {
@@ -97,6 +104,18 @@ export default function AdminSidebar({
       href: "/asgard/causes",
       icon: Heart,
       badge: causesCount.toString(),
+    },
+    {
+      label: "Insights",
+      href: "/asgard/insights",
+      icon: BookOpen,
+      badge: insightsCount.toString(),
+    },
+    {
+      label: "Media / Gallery",
+      href: "/asgard/media",
+      icon: ImageIcon,
+      badge: mediaCount.toString(),
     },
   ];
 

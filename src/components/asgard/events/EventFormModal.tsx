@@ -119,6 +119,7 @@ export default function EventFormModal({
             value={formData.banner_image || ""}
             onChange={(url) => setFormData({ ...formData, banner_image: url })}
             placeholder="Upload banner image..."
+            bucket="events"
           />
 
           <ImageUploader
@@ -127,6 +128,7 @@ export default function EventFormModal({
             onChange={(url) => setFormData({ ...formData, icon: url })}
             placeholder="Upload event icon..."
             previewBgColor="#b8893c"
+            bucket="events"
           />
         </div>
 

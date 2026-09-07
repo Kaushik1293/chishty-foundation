@@ -16,16 +16,15 @@ import {
   Info,
 } from "lucide-react";
 import { MediaRecord } from "@/app/(asgard)/asgard/media/actions";
-import { defaultMediaItems } from "@/src/data/defaultMedia";
 import { formatDateDDMMYYYY } from "@/src/utils/formatDate";
 
-interface GalleryGridProps {
-  mediaItems?: MediaRecord[];
+interface MediaGridProps {
+  mediaItems: MediaRecord[];
 }
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
-export default function GalleryGrid({ mediaItems = [] }: GalleryGridProps) {
+export default function MediaGrid({ mediaItems }: MediaGridProps) {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [zoomLevel, setZoomLevel] = useState<number>(1);
@@ -33,23 +32,15 @@ export default function GalleryGrid({ mediaItems = [] }: GalleryGridProps) {
   const [showCaption, setShowCaption] = useState<boolean>(true);
   const [direction, setDirection] = useState<number>(0);
 
-  // Use live mediaItems from backend or fallback to defaultMediaItems
-  const items: MediaRecord[] = useMemo(() => {
-    if (mediaItems && mediaItems.length > 0) {
-      return mediaItems;
-    }
-    return defaultMediaItems as MediaRecord[];
-  }, [mediaItems]);
-
   // Filtered Media
   const filteredMedia = useMemo(() => {
-    return items.filter((item) => {
+    return mediaItems.filter((item) => {
       const titleMatch = item.title?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false;
       const captionMatch = item.caption?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false;
       const altMatch = item.alt_text?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false;
       return searchTerm === "" || titleMatch || captionMatch || altMatch;
     });
-  }, [items, searchTerm]);
+  }, [mediaItems, searchTerm]);
 
   // Current active item
   const currentItem = activeIndex !== null && filteredMedia[activeIndex] ? filteredMedia[activeIndex] : null;
@@ -142,11 +133,11 @@ export default function GalleryGrid({ mediaItems = [] }: GalleryGridProps) {
   }, [activeIndex]);
 
   return (
-    <section className="container mx-auto px-4 sm:px-6 mb-32 mt-10 font-satoshi">
-      {/* Search & Counter Bar */}
+    <section className="container mx-auto px-4 sm:px-6 mb-32 mt-8 font-satoshi">
+      {/* Top Filter & Counter Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <p className="text-xs md:text-sm font-semibold text-dark-green/70">
-          Showing <span className="text-dark-green font-bold">{filteredMedia.length}</span> gallery photographs
+          Showing <span className="text-dark-green font-bold">{filteredMedia.length}</span> media archive items
         </p>
 
         <div className="relative w-full sm:w-80">
@@ -155,13 +146,13 @@ export default function GalleryGrid({ mediaItems = [] }: GalleryGridProps) {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search gallery by keyword..."
+            placeholder="Search media..."
             className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#ECE2CB] rounded-full text-xs text-dark-green placeholder-dark-green/40 focus:outline-none focus:border-dark-yellow shadow-xs"
           />
         </div>
       </div>
 
-      {/* 4-Column Photo Grid */}
+      {/* 4-Column Photo Grid (Matching User Screenshot 1) */}
       <motion.div
         layout
         className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5"
@@ -184,18 +175,18 @@ export default function GalleryGrid({ mediaItems = [] }: GalleryGridProps) {
                 {item.image_url ? (
                   <img
                     src={item.image_url}
-                    alt={item.alt_text || item.title || "Chishty Foundation Gallery"}
+                    alt={item.alt_text || item.title || "Chishty Foundation Media"}
                     className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-600 ease-out"
                     loading="lazy"
                   />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-dark-green/30 bg-dark-green/5">
                     <ImageIcon className="w-8 h-8 mb-2 opacity-50" />
-                    <span className="text-xs">Chishty Gallery</span>
+                    <span className="text-xs">Chishty Media</span>
                   </div>
                 )}
 
-                {/* Hover Gradient Overlay with Title preview */}
+                {/* Subtle Hover Gradient Overlay with Title preview */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
                   {item.title && (
                     <p className="text-white font-cormorant font-bold text-lg leading-tight truncate drop-shadow-md">
@@ -213,14 +204,14 @@ export default function GalleryGrid({ mediaItems = [] }: GalleryGridProps) {
           ) : (
             <div className="col-span-full py-20 text-center text-dark-green/60">
               <ImageIcon className="w-10 h-10 mx-auto mb-3 opacity-40 text-dark-green" />
-              <p className="font-semibold text-base">No gallery photos found</p>
-              <p className="text-xs text-dark-green/60 mt-1">Try searching with a different keyword.</p>
+              <p className="font-semibold text-base">No media items found</p>
+              <p className="text-xs text-dark-green/60 mt-1">Try searching with a different term.</p>
             </div>
           )}
         </AnimatePresence>
       </motion.div>
 
-      {/* Full-Screen Lightbox Viewer */}
+      {/* Full-Screen Lightbox Viewer (Matching User Screenshot 2) */}
       <AnimatePresence>
         {activeIndex !== null && currentItem && (
           <div className="fixed inset-0 z-50 flex items-center justify-center select-none">
@@ -240,7 +231,7 @@ export default function GalleryGrid({ mediaItems = [] }: GalleryGridProps) {
                 {activeIndex + 1} / {filteredMedia.length}
               </div>
 
-              {/* Action Buttons */}
+              {/* Action Buttons: Fullscreen, Zoom, Info, Download, Close */}
               <div className="flex items-center gap-1 sm:gap-2">
                 {/* Info toggle */}
                 {(currentItem.title || currentItem.caption) && (
@@ -351,7 +342,7 @@ export default function GalleryGrid({ mediaItems = [] }: GalleryGridProps) {
                   {currentItem.image_url ? (
                     <img
                       src={currentItem.image_url}
-                      alt={currentItem.alt_text || currentItem.title || "Chishty Gallery Image"}
+                      alt={currentItem.alt_text || currentItem.title || "Chishty Media Image"}
                       className={`max-h-[78vh] sm:max-h-[82vh] max-w-[90vw] object-contain rounded-lg shadow-2xl transition-transform duration-300 ${
                         zoomLevel > 1 ? "cursor-grab" : "cursor-zoom-in"
                       }`}
