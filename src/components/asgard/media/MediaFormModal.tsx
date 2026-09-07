@@ -2,19 +2,19 @@ import React from "react";
 import { Loader2 } from "lucide-react";
 import Modal from "@/src/components/asgard/Modal";
 import ImageUploader from "@/src/components/asgard/ImageUploader";
-import { PartnerRecord } from "@/app/(asgard)/asgard/partners/actions";
+import { MediaRecord } from "@/app/(asgard)/asgard/media/actions";
 
-interface PartnerFormModalProps {
+interface MediaFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   isEditing: boolean;
-  formData: Partial<PartnerRecord>;
-  setFormData: (data: Partial<PartnerRecord>) => void;
+  formData: Partial<MediaRecord>;
+  setFormData: (data: Partial<MediaRecord>) => void;
   isSubmitting: boolean;
   handleFormSubmit: (e: React.FormEvent) => void;
 }
 
-export default function PartnerFormModal({
+export default function MediaFormModal({
   isOpen,
   onClose,
   isEditing,
@@ -22,54 +22,54 @@ export default function PartnerFormModal({
   setFormData,
   isSubmitting,
   handleFormSubmit,
-}: PartnerFormModalProps) {
+}: MediaFormModalProps) {
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditing ? "Edit Partner" : "Create New Partner"}
-      subtitle="Fill in the partner organization information for Chishty Foundation"
+      title={isEditing ? "Edit Media Asset" : "Upload New Media"}
+      subtitle="Fill in photo and media details for Chishty Foundation gallery"
+      maxWidth="max-w-2xl"
     >
       <form onSubmit={handleFormSubmit} className="space-y-4 font-satoshi">
-        {/* Partner Name */}
+        {/* Image Uploader */}
+        <ImageUploader
+          label="Media File / Photo *"
+          value={formData.image_url || ""}
+          onChange={(url) => setFormData({ ...formData, image_url: url })}
+          placeholder="Drag and drop or browse photo to upload..."
+          bucket="media"
+        />
+
+        {/* Title */}
         <div className="space-y-1">
           <label className="text-xs font-semibold text-dark-green">
-            Partner Name *
+            Title
           </label>
           <input
             type="text"
-            required
-            value={formData.name || ""}
+            value={formData.title || ""}
             onChange={(e) =>
-              setFormData({ ...formData, name: e.target.value })
+              setFormData({ ...formData, title: e.target.value })
             }
-            placeholder="e.g. Crescent Capital Enterprises"
+            placeholder="e.g. World Sufi Forum Inauguration"
             className="w-full px-3.5 py-2.5 bg-white border border-stroke rounded-xl text-xs text-dark-green focus:outline-none focus:border-dark-yellow"
           />
         </div>
 
-        {/* Logo URL (Drag & Drop) */}
-        <ImageUploader
-          label="Logo Image"
-          value={formData.logo_url || ""}
-          onChange={(url) => setFormData({ ...formData, logo_url: url })}
-          placeholder="Upload partner logo..."
-          bucket="partners"
-        />
-
-        {/* Website URL & Display Order */}
+        {/* Alt Text & Display Order */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1">
             <label className="text-xs font-semibold text-dark-green">
-              Website URL
+              Alt Text (for accessibility & SEO)
             </label>
             <input
-              type="url"
-              value={formData.website_url || ""}
+              type="text"
+              value={formData.alt_text || ""}
               onChange={(e) =>
-                setFormData({ ...formData, website_url: e.target.value })
+                setFormData({ ...formData, alt_text: e.target.value })
               }
-              placeholder="https://example.com"
+              placeholder="e.g. Delegates gathering at Ajmer Sharif"
               className="w-full px-3.5 py-2.5 bg-white border border-stroke rounded-xl text-xs text-dark-green focus:outline-none focus:border-dark-yellow"
             />
           </div>
@@ -93,6 +93,22 @@ export default function PartnerFormModal({
           </div>
         </div>
 
+        {/* Caption */}
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-dark-green">
+            Caption / Description
+          </label>
+          <textarea
+            rows={2}
+            value={formData.caption || ""}
+            onChange={(e) =>
+              setFormData({ ...formData, caption: e.target.value })
+            }
+            placeholder="A brief caption describing the moment or project..."
+            className="w-full px-3.5 py-2.5 bg-white border border-stroke rounded-xl text-xs text-dark-green focus:outline-none focus:border-dark-yellow resize-none"
+          />
+        </div>
+
         {/* Active Status Checkbox */}
         <div className="p-3 rounded-xl bg-beige border border-stroke flex items-center justify-between">
           <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-dark-green">
@@ -104,11 +120,11 @@ export default function PartnerFormModal({
               }
               className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
             />
-            <span>Active Partner</span>
+            <span>Active / Visible in Gallery</span>
           </label>
         </div>
 
-        {/* Buttons */}
+        {/* Action Buttons */}
         <div className="pt-4 flex items-center justify-end gap-3 border-t border-stroke">
           <button
             type="button"
@@ -128,7 +144,7 @@ export default function PartnerFormModal({
                 <span>Saving...</span>
               </>
             ) : (
-              <span>{isEditing ? "Update Partner" : "Create Partner"}</span>
+              <span>{isEditing ? "Update Media" : "Save Media"}</span>
             )}
           </button>
         </div>

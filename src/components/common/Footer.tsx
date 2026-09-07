@@ -110,6 +110,7 @@ const linkUrlMap: Record<string, string> = {
     'Fundraise': '/get-involved',
     'Corporate Partnership': '/contact',
     'Campaigns': '/causes',
+    'Insights': '/insights',
 }
 
 const footerColumns: { icon: ImgSrc; heading: string; links: string[] }[] = [

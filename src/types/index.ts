@@ -21,3 +21,28 @@ export interface IEvent {
   created_at: string;
   updated_at: string;
 }
+
+export interface IInsight {
+  id: string;
+  title: string | null;
+  description: string | null;
+  image_url: string | null;
+  document_url: string | null;
+  category: string | null;
+  display_order: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface IMediaItem {
+  id: string;
+  image_url: string | null;
+  title: string | null;
+  alt_text: string | null;
+  caption: string | null;
+  display_order: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}

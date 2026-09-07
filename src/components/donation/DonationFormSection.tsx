@@ -1,8 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import SectionHeading from "../common/SectionHeading";
+import qrCodeImg from "../../assets/images/donation-qr.png";
+import { useRazorpayCheckout } from "@/lib/razorpay";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -18,6 +21,68 @@ export const DONATION_CATEGORIES = [
 
 export type DonationCategory = (typeof DONATION_CATEGORIES)[number];
 export type PaymentMethod = "UPI" | "Debit/Credit Card" | "PayPal";
+
+export interface CountryInfo {
+  code: string;
+  name: string;
+  dialCode: string;
+  flag: string;
+  minLen: number;
+  maxLen: number;
+  placeholder: string;
+}
+
+export const COUNTRIES: CountryInfo[] = [
+  { code: "IN", name: "India", dialCode: "+91", flag: "🇮🇳", minLen: 10, maxLen: 10, placeholder: "98291 00000" },
+  { code: "US", name: "United States", dialCode: "+1", flag: "🇺🇸", minLen: 10, maxLen: 10, placeholder: "202 555 0123" },
+  { code: "GB", name: "United Kingdom", dialCode: "+44", flag: "🇬🇧", minLen: 10, maxLen: 11, placeholder: "7911 123456" },
+  { code: "AE", name: "United Arab Emirates", dialCode: "+971", flag: "🇦🇪", minLen: 9, maxLen: 9, placeholder: "50 123 4567" },
+  { code: "SA", name: "Saudi Arabia", dialCode: "+966", flag: "🇸🇦", minLen: 9, maxLen: 9, placeholder: "50 123 4567" },
+  { code: "CA", name: "Canada", dialCode: "+1", flag: "🇨🇦", minLen: 10, maxLen: 10, placeholder: "416 555 0123" },
+  { code: "AU", name: "Australia", dialCode: "+61", flag: "🇦🇺", minLen: 9, maxLen: 10, placeholder: "412 345 678" },
+  { code: "QA", name: "Qatar", dialCode: "+974", flag: "🇶🇦", minLen: 8, maxLen: 8, placeholder: "3312 3456" },
+  { code: "KW", name: "Kuwait", dialCode: "+965", flag: "🇰🇼", minLen: 8, maxLen: 8, placeholder: "9123 4567" },
+  { code: "OM", name: "Oman", dialCode: "+968", flag: "🇴🇲", minLen: 8, maxLen: 8, placeholder: "9123 4567" },
+  { code: "BH", name: "Bahrain", dialCode: "+973", flag: "🇧🇭", minLen: 8, maxLen: 8, placeholder: "3600 1234" },
+  { code: "SG", name: "Singapore", dialCode: "+65", flag: "🇸🇬", minLen: 8, maxLen: 8, placeholder: "8123 4567" },
+  { code: "MY", name: "Malaysia", dialCode: "+60", flag: "🇲🇾", minLen: 9, maxLen: 10, placeholder: "12 345 6789" },
+  { code: "DE", name: "Germany", dialCode: "+49", flag: "🇩🇪", minLen: 10, maxLen: 11, placeholder: "151 23456789" },
+  { code: "FR", name: "France", dialCode: "+33", flag: "🇫🇷", minLen: 9, maxLen: 9, placeholder: "6 12 34 56 78" },
+  { code: "TR", name: "Turkey", dialCode: "+90", flag: "🇹🇷", minLen: 10, maxLen: 10, placeholder: "532 123 4567" },
+  { code: "ZA", name: "South Africa", dialCode: "+27", flag: "🇿🇦", minLen: 9, maxLen: 9, placeholder: "71 123 4567" },
+  { code: "NZ", name: "New Zealand", dialCode: "+64", flag: "🇳🇿", minLen: 8, maxLen: 10, placeholder: "21 123 4567" },
+  { code: "NL", name: "Netherlands", dialCode: "+31", flag: "🇳🇱", minLen: 9, maxLen: 9, placeholder: "6 12345678" },
+  { code: "CH", name: "Switzerland", dialCode: "+41", flag: "🇨🇭", minLen: 9, maxLen: 9, placeholder: "78 123 45 67" },
+  { code: "SE", name: "Sweden", dialCode: "+46", flag: "🇸🇪", minLen: 9, maxLen: 9, placeholder: "70 123 45 67" },
+  { code: "NO", name: "Norway", dialCode: "+47", flag: "🇳🇴", minLen: 8, maxLen: 8, placeholder: "412 34 567" },
+  { code: "DK", name: "Denmark", dialCode: "+45", flag: "🇩🇰", minLen: 8, maxLen: 8, placeholder: "20 12 34 56" },
+  { code: "IT", name: "Italy", dialCode: "+39", flag: "🇮🇹", minLen: 9, maxLen: 10, placeholder: "312 345 6789" },
+  { code: "ES", name: "Spain", dialCode: "+34", flag: "🇪🇸", minLen: 9, maxLen: 9, placeholder: "612 34 56 78" },
+  { code: "IE", name: "Ireland", dialCode: "+353", flag: "🇮🇪", minLen: 9, maxLen: 9, placeholder: "83 123 4567" },
+  { code: "JP", name: "Japan", dialCode: "+81", flag: "🇯🇵", minLen: 10, maxLen: 10, placeholder: "90 1234 5678" },
+  { code: "BD", name: "Bangladesh", dialCode: "+880", flag: "🇧🇩", minLen: 10, maxLen: 10, placeholder: "1712 345678" },
+  { code: "PK", name: "Pakistan", dialCode: "+92", flag: "🇵🇰", minLen: 10, maxLen: 10, placeholder: "300 1234567" },
+  { code: "LK", name: "Sri Lanka", dialCode: "+94", flag: "🇱🇰", minLen: 9, maxLen: 9, placeholder: "71 234 5678" },
+  { code: "NP", name: "Nepal", dialCode: "+977", flag: "🇳🇵", minLen: 10, maxLen: 10, placeholder: "984 1234567" },
+  { code: "ID", name: "Indonesia", dialCode: "+62", flag: "🇮🇩", minLen: 9, maxLen: 12, placeholder: "812 3456 7890" },
+  { code: "EG", name: "Egypt", dialCode: "+20", flag: "🇪🇬", minLen: 10, maxLen: 10, placeholder: "100 123 4567" },
+  { code: "JO", name: "Jordan", dialCode: "+962", flag: "🇯🇴", minLen: 9, maxLen: 9, placeholder: "7 9012 3456" },
+  { code: "LB", name: "Lebanon", dialCode: "+961", flag: "🇱🇧", minLen: 7, maxLen: 8, placeholder: "70 123 456" },
+  { code: "KE", name: "Kenya", dialCode: "+254", flag: "🇰🇪", minLen: 9, maxLen: 9, placeholder: "712 345678" },
+  { code: "NG", name: "Nigeria", dialCode: "+234", flag: "🇳🇬", minLen: 10, maxLen: 10, placeholder: "802 123 4567" },
+  { code: "TZ", name: "Tanzania", dialCode: "+255", flag: "🇹🇿", minLen: 9, maxLen: 9, placeholder: "712 345 678" },
+  { code: "UG", name: "Uganda", dialCode: "+256", flag: "🇺🇬", minLen: 9, maxLen: 9, placeholder: "712 345678" },
+  { code: "MU", name: "Mauritius", dialCode: "+230", flag: "🇲🇺", minLen: 8, maxLen: 8, placeholder: "5123 4567" },
+  { code: "MV", name: "Maldives", dialCode: "+960", flag: "🇲🇻", minLen: 7, maxLen: 7, placeholder: "712 3456" },
+  { code: "TH", name: "Thailand", dialCode: "+66", flag: "🇹🇭", minLen: 9, maxLen: 9, placeholder: "81 234 5678" },
+  { code: "PH", name: "Philippines", dialCode: "+63", flag: "🇵🇭", minLen: 10, maxLen: 10, placeholder: "917 123 4567" },
+  { code: "VN", name: "Vietnam", dialCode: "+84", flag: "🇻🇳", minLen: 9, maxLen: 10, placeholder: "91 234 5678" },
+  { code: "BR", name: "Brazil", dialCode: "+55", flag: "🇧🇷", minLen: 10, maxLen: 11, placeholder: "11 91234 5678" },
+  { code: "MX", name: "Mexico", dialCode: "+52", flag: "🇲🇽", minLen: 10, maxLen: 10, placeholder: "55 1234 5678" },
+  { code: "RU", name: "Russia", dialCode: "+7", flag: "🇷🇺", minLen: 10, maxLen: 10, placeholder: "912 345 67 89" },
+  { code: "CN", name: "China", dialCode: "+86", flag: "🇨🇳", minLen: 11, maxLen: 11, placeholder: "138 0013 8000" },
+  { code: "KR", name: "South Korea", dialCode: "+82", flag: "🇰🇷", minLen: 9, maxLen: 10, placeholder: "10 1234 5678" },
+];
 
 const PRESET_AMOUNTS = [500, 1000, 2500, 5000, 10000];
 
@@ -53,6 +118,17 @@ const SpinnerIcon = () => (
   </svg>
 );
 
+const CountryFlag = ({ code, name, className = "w-5 h-3.5" }: { code: string; name: string; className?: string }) => (
+  // eslint-disable-next-line @next/next/no-img-element
+  <img
+    src={`https://flagcdn.com/w40/${code.toLowerCase()}.png`}
+    srcSet={`https://flagcdn.com/w80/${code.toLowerCase()}.png 2x`}
+    alt={name}
+    loading="lazy"
+    className={`inline-block object-cover rounded-[3px] shadow-[0_1px_2px_rgba(0,0,0,0.12)] border border-black/10 shrink-0 ${className}`}
+  />
+);
+
 interface DonationFormData {
   category: DonationCategory;
   amount: string;
@@ -68,6 +144,8 @@ interface DonationFormData {
 const DEFAULT_UPI_ID = "chishtyfoundation@boi";
 
 const DonationFormSection = () => {
+  const { openCheckout } = useRazorpayCheckout();
+
   const [formData, setFormData] = useState<DonationFormData>({
     category: "Education",
     amount: "1000",
@@ -80,12 +158,54 @@ const DonationFormSection = () => {
     paymentMethod: "UPI",
   });
 
+  const [selectedCountry, setSelectedCountry] = useState<CountryInfo>(COUNTRIES[0]);
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
+  const countryDropdownRef = useRef<HTMLDivElement>(null);
+
   const [selectedPreset, setSelectedPreset] = useState<number | "custom">(1000);
   const [errors, setErrors] = useState<Partial<Record<keyof DonationFormData | "form", string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionStatus, setSubmissionStatus] = useState<"idle" | "success" | "error">("idle");
+  const [paymentDetails, setPaymentDetails] = useState<{
+    paymentId?: string;
+    orderId?: string;
+  } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  // Close country dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (countryDropdownRef.current && !countryDropdownRef.current.contains(event.target as Node)) {
+        setIsCountryDropdownOpen(false);
+      }
+    };
+    if (isCountryDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isCountryDropdownOpen]);
+
+  const filteredCountries = COUNTRIES.filter(
+    (c) =>
+      c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
+      c.dialCode.includes(countrySearch) ||
+      c.code.toLowerCase().includes(countrySearch.toLowerCase())
+  );
+
+  const handleSelectCountry = (country: CountryInfo) => {
+    setSelectedCountry(country);
+    setIsCountryDropdownOpen(false);
+    setCountrySearch("");
+    // Automatically sync country field if default or empty
+    setFormData((prev) => ({
+      ...prev,
+      country: country.name,
+    }));
+  };
 
   const handleCopy = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
@@ -107,6 +227,14 @@ const DonationFormSection = () => {
     setFormData((prev) => ({ ...prev, amount: val }));
     if (errors.amount) {
       setErrors((prev) => ({ ...prev, amount: undefined }));
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawVal = e.target.value.replace(/\D/g, "").slice(0, selectedCountry.maxLen);
+    setFormData((prev) => ({ ...prev, phone: rawVal }));
+    if (errors.phone) {
+      setErrors((prev) => ({ ...prev, phone: undefined }));
     }
   };
 
@@ -137,10 +265,14 @@ const DonationFormSection = () => {
       newErrors.email = "Please enter a valid email address";
     }
 
-    if (!formData.phone.trim()) {
+    const cleanPhone = formData.phone.replace(/\D/g, "");
+    if (!cleanPhone) {
       newErrors.phone = "Phone number is required";
-    } else if (formData.phone.replace(/\D/g, "").length < 7) {
-      newErrors.phone = "Please enter a valid phone number";
+    } else if (cleanPhone.length < selectedCountry.minLen) {
+      newErrors.phone =
+        selectedCountry.minLen === selectedCountry.maxLen
+          ? `${selectedCountry.name} phone number must be ${selectedCountry.minLen} digits`
+          : `${selectedCountry.name} phone number must be between ${selectedCountry.minLen} and ${selectedCountry.maxLen} digits`;
     }
 
     setErrors(newErrors);
@@ -159,18 +291,99 @@ const DonationFormSection = () => {
     setErrorMessage("");
 
     try {
-      // Record donation intent via existing Supabase architecture
+      let paymentId: string | undefined;
+      let orderId: string | undefined;
+      let signature: string | undefined;
+
+      // Online payment via Razorpay
+      if (formData.paymentMethod === "Debit/Credit Card" || formData.paymentMethod === "UPI") {
+        // 1. Create Razorpay Order on server (via Supabase Edge Function)
+        const { createRazorpayOrder, verifyRazorpayPayment } = await import("@/app/(web)/action");
+        const orderRes = await createRazorpayOrder({
+          amount: parseFloat(formData.amount),
+          notes: {
+            category: formData.category,
+            donor_name: formData.fullName.trim(),
+            donor_email: formData.email.trim(),
+          },
+        });
+
+        if (!orderRes.success || !orderRes.order) {
+          throw new Error(orderRes.error || "Failed to initialize payment order with Razorpay.");
+        }
+
+        const serverOrder = orderRes.order;
+        const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+
+        if (!razorpayKey) {
+          throw new Error("Razorpay Key ID was not returned by the server or environment.");
+        }
+
+        // 2. Open Razorpay Checkout modal
+        try {
+          const rawDigits = formData.phone.replace(/\D/g, "");
+          const formattedDialPhone = `${selectedCountry.dialCode}${rawDigits}`;
+          const fullPhoneWithCode = `${selectedCountry.dialCode} ${formData.phone}`.trim();
+
+          const response = await openCheckout({
+            key: razorpayKey,
+            amount: serverOrder.amount,
+            currency: serverOrder.currency,
+            name: "Chishty Foundation",
+            description: `Donation for ${formData.category}`,
+            order_id: serverOrder.id,
+            prefill: {
+              name: formData.fullName.trim(),
+              email: formData.email.trim(),
+              contact: formattedDialPhone,
+            },
+            theme: { color: "#BD8C3B" },
+          });
+
+          paymentId = response.razorpay_payment_id;
+          orderId = response.razorpay_order_id || serverOrder.id;
+          signature = response.razorpay_signature;
+
+          // 3. Verify Payment signature on backend via Supabase Edge Function
+          if (signature && orderId) {
+            const verifyRes = await verifyRazorpayPayment({
+              razorpay_order_id: orderId,
+              razorpay_payment_id: paymentId,
+              razorpay_signature: signature,
+            });
+
+            if (!verifyRes.success) {
+              console.warn("Signature verification warning:", verifyRes.error);
+            }
+          }
+
+          setPaymentDetails({ paymentId, orderId });
+        } catch (checkoutErr: any) {
+          if (checkoutErr?.message?.includes("cancelled")) {
+            setIsSubmitting(false);
+            return; // User cancelled the payment modal
+          }
+          throw checkoutErr;
+        }
+      }
+
+      // 4. Record donation in database
+      const fullPhone = `${selectedCountry.dialCode} ${formData.phone}`.trim();
       const { submitDonationIntent } = await import("@/app/(web)/action");
       await submitDonationIntent({
         category: formData.category,
         amount: parseFloat(formData.amount),
         full_name: formData.fullName.trim(),
         email: formData.email.trim(),
-        phone: formData.phone.trim(),
+        phone: fullPhone,
         address: formData.address.trim() || undefined,
         city: formData.city.trim() || undefined,
-        country: formData.country.trim() || undefined,
+        country: formData.country.trim() || selectedCountry.name,
         payment_method: formData.paymentMethod,
+        payment_id: paymentId,
+        razorpay_order_id: orderId,
+        razorpay_signature: signature,
+        status: paymentId ? "completed" : "pending",
       });
 
       setSubmissionStatus("success");
@@ -180,6 +393,183 @@ const DonationFormSection = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handlePrintReceipt = () => {
+    const printWindow = window.open("", "_blank", "width=750,height=850");
+    const formattedAmount = parseFloat(formData.amount || "0").toLocaleString("en-IN");
+    const currentDate = new Date().toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+
+    if (!printWindow) {
+      window.print();
+      return;
+    }
+
+    printWindow.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Donation Receipt - Chishty Foundation</title>
+  <style>
+    @page { size: portrait; margin: 12mm; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      margin: 0;
+      padding: 10px;
+      background: #ffffff;
+      color: #0A3231;
+    }
+    .receipt {
+      max-width: 580px;
+      margin: 0 auto;
+      background: #FAF6EE;
+      border: 1.5px solid #EADBBE;
+      border-radius: 16px;
+      padding: 26px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1.5px solid #EADBBE;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .title {
+      font-size: 19px;
+      font-weight: 800;
+      color: #0A3231;
+    }
+    .subtitle {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #777;
+      margin-bottom: 2px;
+      font-weight: 700;
+    }
+    .badge {
+      background: #D1FAE5;
+      color: #065F46;
+      padding: 5px 12px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      font-size: 13px;
+    }
+    .cell {
+      display: flex;
+      flex-direction: column;
+    }
+    .label {
+      font-size: 10px;
+      color: #777;
+      margin-bottom: 2px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .val {
+      font-weight: 600;
+      color: #0A3231;
+    }
+    .amount {
+      font-size: 20px;
+      font-weight: 800;
+      color: #BD8C3B;
+    }
+    .payment-box {
+      grid-column: span 2;
+      background: #FFFFFF;
+      padding: 9px 12px;
+      border-radius: 8px;
+      border: 1px solid #EADBBE;
+    }
+    .mono {
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .footer {
+      margin-top: 18px;
+      padding-top: 12px;
+      border-top: 1px solid #EADBBE;
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="receipt">
+    <div class="header">
+      <div>
+        <div class="subtitle">Official Donation Receipt</div>
+        <div class="title">CHISHTY FOUNDATION</div>
+      </div>
+      <div class="badge">Payment Confirmed</div>
+    </div>
+    <div class="grid">
+      <div class="cell">
+        <span class="label">Donation Amount</span>
+        <span class="val amount">₹${formattedAmount}</span>
+      </div>
+      <div class="cell">
+        <span class="label">Cause / Program</span>
+        <span class="val">${formData.category}</span>
+      </div>
+      ${paymentDetails?.paymentId ? `
+      <div class="payment-box cell">
+        <span class="label">Payment ID (Razorpay)</span>
+        <span class="val mono">${paymentDetails.paymentId}</span>
+      </div>
+      ` : ""}
+      <div class="cell">
+        <span class="label">Donor Name</span>
+        <span class="val">${formData.fullName || "—"}</span>
+      </div>
+      <div class="cell">
+        <span class="label">Email</span>
+        <span class="val" style="word-break: break-all;">${formData.email || "—"}</span>
+      </div>
+      <div class="cell">
+        <span class="label">Phone</span>
+        <span class="val">${formData.phone || "—"}</span>
+      </div>
+      <div class="cell">
+        <span class="label">Payment Mode</span>
+        <span class="val">${formData.paymentMethod}</span>
+      </div>
+      <div class="cell">
+        <span class="label">Date</span>
+        <span class="val">${currentDate}</span>
+      </div>
+    </div>
+    <div class="footer">
+      <span>Section 80G Tax Exemption Eligible</span>
+      <span>Ajmer Sharif, Rajasthan, India</span>
+    </div>
+  </div>
+  <script>
+    window.onload = function() {
+      window.focus();
+      window.print();
+      window.onafterprint = function() { window.close(); };
+    };
+  </script>
+</body>
+</html>`);
+    printWindow.document.close();
   };
 
   const inputBaseClasses =
@@ -202,68 +592,155 @@ const DonationFormSection = () => {
         </div>
 
         <div className="grid lg:grid-cols-[1.3fr_1fr] gap-8 items-start">
-          {/* Main Donation Form */}
+          {/* Main Donation Form / Thank You Screen */}
           <motion.div
-            variants={EASE_STAGGER}
-            initial="hidden"
-            whileInView="visible"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.6, ease: EASE }}
             className="bg-white rounded-4xl shadow-[0_10px_40px_-16px_rgba(0,0,0,0.08)] px-7 md:px-10 py-9 border border-[#F1E3D7]"
           >
             <AnimatePresence mode="wait">
               {submissionStatus === "success" ? (
                 <motion.div
-                  key="success"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className="py-10 text-center"
+                  key="thank-you"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  className="py-4 text-center"
                 >
-                  <div className="w-20 h-20 mx-auto rounded-full bg-dark-green/10 flex items-center justify-center text-dark-yellow mb-6">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" strokeLinecap="round" strokeLinejoin="round" />
-                      <polyline points="22 4 12 14.01 9 11.01" strokeLinecap="round" strokeLinejoin="round" />
+                  {/* Success Badge */}
+                  <div className="w-20 h-20 mx-auto rounded-full bg-emerald-50 border-2 border-emerald-200 flex items-center justify-center text-emerald-600 mb-5 shadow-sm">
+                    <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
                     </svg>
                   </div>
 
-                  <h3 className="font-cormorant font-bold text-3xl text-dark-green mb-3">
-                    Donation Request Registered!
+                  <span className="text-dark-yellow text-xs font-bold uppercase tracking-widest block mb-1">
+                    Payment Confirmed
+                  </span>
+                  <h3 className="font-cormorant font-bold text-3xl sm:text-4xl text-dark-green mb-3">
+                    Thank You for Your Generous Giving!
                   </h3>
 
-                  <p className="text-dark-green/75 max-w-md mx-auto text-base mb-6 leading-relaxed">
-                    Thank you, <span className="font-semibold text-dark-green">{formData.fullName}</span>. Your contribution of{" "}
-                    <span className="font-semibold text-dark-yellow">₹{parseFloat(formData.amount).toLocaleString("en-IN")}</span> for{" "}
-                    <span className="italic font-medium">{formData.category}</span> is greatly appreciated.
+                  <p className="text-dark-green/75 max-w-lg mx-auto text-sm sm:text-base mb-6 leading-relaxed">
+                    Dear <span className="font-semibold text-dark-green">{formData.fullName}</span>, your contribution has been successfully received. May your kindness bring abundance and blessings.
                   </p>
 
-                  <div className="bg-beige border border-[#F2E7D6] rounded-2xl p-5 max-w-md mx-auto text-left text-xs sm:text-sm text-dark-green/80 mb-6 space-y-2">
-                    <p className="font-semibold text-dark-green">Completing Your Payment:</p>
-                    <p>
-                      {formData.paymentMethod === "UPI" && (
-                        <>Please scan the QR code or transfer via UPI ID: <strong className="text-dark-green">{DEFAULT_UPI_ID}</strong>.</>
+                  {/* Formal Receipt Summary Box */}
+                  <div id="donation-receipt" className="bg-[#FAF6EE] border border-[#EADBBE] rounded-3xl p-6 text-left max-w-lg mx-auto mb-6 shadow-sm">
+                    <div className="flex justify-between items-center pb-4 mb-4 border-b border-[#EADBBE]">
+                      <div>
+                        <span className="text-[11px] font-semibold text-dark-green/60 uppercase tracking-wider block">
+                          Official Donation Receipt
+                        </span>
+                        <strong className="text-dark-green font-bold text-base">CHISHTY FOUNDATION</strong>
+                      </div>
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        Payment Confirmed
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 text-xs sm:text-sm">
+                      <div>
+                        <span className="text-dark-green/60 block text-[11px]">Donation Amount</span>
+                        <strong className="text-dark-yellow font-bold text-lg">
+                          ₹{parseFloat(formData.amount || "0").toLocaleString("en-IN")}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span className="text-dark-green/60 block text-[11px]">Cause / Program</span>
+                        <strong className="text-dark-green font-semibold">{formData.category}</strong>
+                      </div>
+
+                      {paymentDetails?.paymentId && (
+                        <div className="col-span-2 bg-white/80 p-2.5 rounded-xl border border-[#EADBBE]">
+                          <span className="text-dark-green/60 block text-[11px]">Payment ID (Razorpay)</span>
+                          <div className="flex justify-between items-center">
+                            <strong className="font-mono text-dark-green text-xs break-all">
+                              {paymentDetails.paymentId}
+                            </strong>
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(paymentDetails.paymentId!, "pay-id")}
+                              className="text-dark-yellow hover:text-dark-green text-xs font-semibold ml-2 cursor-pointer flex items-center gap-1"
+                            >
+                              {copiedKey === "pay-id" ? "Copied!" : "Copy"}
+                            </button>
+                          </div>
+                        </div>
                       )}
-                      {formData.paymentMethod === "Debit/Credit Card" && (
-                        <>Payment gateway integration is ready. You will be redirected to the secure portal or can transfer directly to our official BOI / ICICI accounts on the right.</>
-                      )}
-                      {formData.paymentMethod === "PayPal" && (
-                        <>For international transfers, please contact <strong className="text-dark-green">services@chishtyfoundation.org</strong> or transfer directly to our official accounts.</>
-                      )}
-                    </p>
-                    <p className="text-dark-green/60 text-[11px] pt-1">
-                      A confirmation email has been dispatched to {formData.email}.
-                    </p>
+
+                      <div>
+                        <span className="text-dark-green/60 block text-[11px]">Donor Name</span>
+                        <span className="font-medium text-dark-green">{formData.fullName || "—"}</span>
+                      </div>
+
+                      <div>
+                        <span className="text-dark-green/60 block text-[11px]">Email</span>
+                        <span className="font-medium text-dark-green break-all">{formData.email || "—"}</span>
+                      </div>
+
+                      <div>
+                        <span className="text-dark-green/60 block text-[11px]">Phone</span>
+                        <span className="font-medium text-dark-green">{formData.phone || "—"}</span>
+                      </div>
+
+                      <div>
+                        <span className="text-dark-green/60 block text-[11px]">Payment Mode</span>
+                        <span className="font-medium text-dark-green">{formData.paymentMethod}</span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-[#EADBBE] flex items-center justify-between text-[11px] text-dark-green/70">
+                      <span>Section 80G Tax Exemption Eligible</span>
+                      <span>Ajmer Sharif, Rajasthan, India</span>
+                    </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSubmissionStatus("idle");
-                      setFormData((prev) => ({ ...prev, fullName: "", email: "", phone: "", address: "", city: "" }));
-                    }}
-                    className="rounded-full bg-dark-green text-white px-8 py-3 text-sm font-medium hover:bg-dark-green/90 transition-colors"
-                  >
-                    Make Another Donation
-                  </button>
+                  <p className="text-dark-green/60 text-xs mb-6 max-w-md mx-auto">
+                    A formal donation receipt has been dispatched to <strong>{formData.email}</strong>.
+                  </p>
+
+                  <div className="flex flex-wrap items-center justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={handlePrintReceipt}
+                      className="rounded-full bg-dark-yellow text-white px-6 py-3 text-sm font-semibold hover:bg-dark-yellow/90 transition-all flex items-center gap-2 shadow-sm cursor-pointer"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="6 9 6 2 18 2 18 9" />
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                        <rect x="6" y="14" width="12" height="8" />
+                      </svg>
+                      Print / Save Receipt
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSubmissionStatus("idle");
+                        setPaymentDetails(null);
+                        setSelectedPreset(1000);
+                        setFormData({
+                          category: "Education",
+                          amount: "1000",
+                          fullName: "",
+                          email: "",
+                          phone: "",
+                          address: "",
+                          city: "",
+                          country: "India",
+                          paymentMethod: "UPI",
+                        });
+                      }}
+                      className="rounded-full bg-dark-green text-white px-6 py-3 text-sm font-semibold hover:bg-dark-green/90 transition-all cursor-pointer"
+                    >
+                      Make Another Donation
+                    </button>
+                  </div>
                 </motion.div>
               ) : submissionStatus === "error" ? (
                 <motion.div
@@ -293,7 +770,7 @@ const DonationFormSection = () => {
                     <button
                       type="button"
                       onClick={() => setSubmissionStatus("idle")}
-                      className="rounded-full bg-dark-green text-white px-6 py-2.5 text-sm font-medium hover:bg-dark-green/90 transition-colors"
+                      className="rounded-full bg-dark-green text-white px-6 py-2.5 text-sm font-medium hover:bg-dark-green/90 transition-colors cursor-pointer"
                     >
                       Try Again
                     </button>
@@ -306,7 +783,15 @@ const DonationFormSection = () => {
                   </div>
                 </motion.div>
               ) : (
-                <form onSubmit={handleSubmit} noValidate>
+                <motion.form
+                  key="donation-form"
+                  variants={EASE_STAGGER}
+                  initial="hidden"
+                  animate="visible"
+                  exit={{ opacity: 0, y: -10 }}
+                  onSubmit={handleSubmit}
+                  noValidate
+                >
                   {/* 1. Donation Category Dropdown */}
                   <motion.div variants={fadeUp} className="mb-6">
                     <label className="block text-xs font-bold uppercase tracking-wider text-dark-green/70 mb-2">
@@ -337,11 +822,10 @@ const DonationFormSection = () => {
                           key={amt}
                           type="button"
                           onClick={() => handlePresetSelect(amt)}
-                          className={`py-2.5 rounded-xl border text-sm font-bold transition-all duration-200 ${
-                            selectedPreset === amt
-                              ? "bg-dark-yellow text-white border-dark-yellow shadow-md"
-                              : "bg-[#FBF6F0] text-dark-green border-[#E8DFC9] hover:border-dark-yellow"
-                          }`}
+                          className={`py-2.5 rounded-xl border text-sm font-bold transition-all duration-200 ${selectedPreset === amt
+                            ? "bg-dark-yellow text-white border-dark-yellow shadow-md"
+                            : "bg-[#FBF6F0] text-dark-green border-[#E8DFC9] hover:border-dark-yellow"
+                            }`}
                         >
                           ₹{amt.toLocaleString("en-IN")}
                         </button>
@@ -358,9 +842,8 @@ const DonationFormSection = () => {
                         placeholder="Or enter custom amount"
                         value={formData.amount}
                         onChange={handleCustomAmountChange}
-                        className={`${inputBaseClasses} pl-8 font-semibold ${
-                          errors.amount ? "border-red-400" : "border-transparent"
-                        }`}
+                        className={`${inputBaseClasses} pl-8 font-semibold ${errors.amount ? "border-red-400" : "border-transparent"
+                          }`}
                       />
                     </div>
                     {errors.amount && (
@@ -409,13 +892,87 @@ const DonationFormSection = () => {
                       <label className="block text-xs font-bold uppercase tracking-wider text-dark-green/70 mb-2">
                         Phone Number<span className="text-red-500">*</span>
                       </label>
-                      <input
-                        type="tel"
-                        placeholder="+91 98291 XXXXX"
-                        value={formData.phone}
-                        onChange={handleInputChange("phone")}
-                        className={`${inputBaseClasses} ${errors.phone ? "border-red-400" : "border-transparent"}`}
-                      />
+                      <div className="relative flex items-stretch">
+                        {/* Country Picker Trigger (Real Flag Image) */}
+                        <button
+                          type="button"
+                          onClick={() => setIsCountryDropdownOpen((prev) => !prev)}
+                          className="flex items-center gap-2 pl-3 pr-2 py-3 bg-[#F4EDE2] hover:bg-[#EDE3D3] rounded-l-xl border-y border-l border-r border-[#E8DFC9] text-dark-green transition-colors cursor-pointer shrink-0"
+                          title={`${selectedCountry.name} (${selectedCountry.dialCode})`}
+                        >
+                          <CountryFlag code={selectedCountry.code} name={selectedCountry.name} className="w-6 h-4" />
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            className={`transition-transform duration-200 text-dark-green/60 ${
+                              isCountryDropdownOpen ? "rotate-180" : ""
+                            }`}
+                          >
+                            <polyline points="6 9 12 15 18 9" />
+                          </svg>
+                        </button>
+
+                        {/* Local Phone Number Input */}
+                        <input
+                          type="tel"
+                          inputMode="numeric"
+                          maxLength={selectedCountry.maxLen}
+                          placeholder={selectedCountry.placeholder}
+                          value={formData.phone}
+                          onChange={handlePhoneChange}
+                          className={`${inputBaseClasses} rounded-l-none pl-3 ${
+                            errors.phone ? "border-red-400" : "border-transparent"
+                          }`}
+                        />
+
+                        {/* Searchable Country Dropdown Modal */}
+                        {isCountryDropdownOpen && (
+                          <div
+                            ref={countryDropdownRef}
+                            className="absolute top-full left-0 mt-1.5 w-72 sm:w-80 max-h-72 bg-white rounded-2xl shadow-2xl border border-[#E8DFC9] z-50 overflow-hidden flex flex-col"
+                          >
+                            <div className="p-2.5 border-b border-[#F1E3D7] bg-[#FAF6EE]">
+                              <input
+                                type="text"
+                                placeholder="Search country or code..."
+                                value={countrySearch}
+                                onChange={(e) => setCountrySearch(e.target.value)}
+                                className="w-full bg-white rounded-lg px-3 py-1.5 text-xs text-dark-green placeholder:text-dark-green/40 outline-none border border-[#E8DFC9] focus:border-dark-yellow"
+                                autoFocus
+                              />
+                            </div>
+                            <div className="overflow-y-auto max-h-56 p-1 divide-y divide-[#FAF6EE]">
+                              {filteredCountries.map((country) => (
+                                <button
+                                  key={country.code}
+                                  type="button"
+                                  onClick={() => handleSelectCountry(country)}
+                                  className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg transition-colors text-left cursor-pointer ${
+                                    selectedCountry.code === country.code
+                                      ? "bg-dark-yellow/15 text-dark-green font-bold"
+                                      : "hover:bg-[#FAF6EE] text-dark-green"
+                                  }`}
+                                >
+                                  <span className="flex items-center gap-2.5 truncate">
+                                    <CountryFlag code={country.code} name={country.name} className="w-5 h-3.5" />
+                                    <span className="truncate">{country.name}</span>
+                                  </span>
+                                  <span className="font-mono text-dark-yellow font-semibold ml-2 shrink-0">
+                                    {country.dialCode}
+                                  </span>
+                                </button>
+                              ))}
+                              {filteredCountries.length === 0 && (
+                                <div className="p-4 text-center text-xs text-dark-green/60">No country found</div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                       {errors.phone && (
                         <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
                       )}
@@ -464,29 +1021,6 @@ const DonationFormSection = () => {
                     </div>
                   </motion.div>
 
-                  {/* 6. Payment Method Selection */}
-                  <motion.div variants={fadeUp} className="mb-8">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-dark-green/70 mb-3">
-                      Payment Method<span className="text-red-500">*</span>
-                    </label>
-                    <div className="grid grid-cols-3 gap-2.5">
-                      {(["UPI", "Debit/Credit Card", "PayPal"] as PaymentMethod[]).map((method) => (
-                        <button
-                          key={method}
-                          type="button"
-                          onClick={() => setFormData((prev) => ({ ...prev, paymentMethod: method }))}
-                          className={`p-3 rounded-xl border text-xs sm:text-sm font-semibold flex flex-col items-center justify-center gap-1 transition-all ${
-                            formData.paymentMethod === method
-                              ? "border-dark-green bg-dark-green text-white shadow-sm"
-                              : "bg-[#FBF6F0] text-dark-green border-[#E8DFC9] hover:border-dark-yellow"
-                          }`}
-                        >
-                          <span className="font-bold">{method}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </motion.div>
-
                   {/* 7. Continue to Payment Button */}
                   <motion.div variants={fadeUp}>
                     <button
@@ -512,7 +1046,7 @@ const DonationFormSection = () => {
                       )}
                     </button>
                   </motion.div>
-                </form>
+                </motion.form>
               )}
             </AnimatePresence>
           </motion.div>
@@ -536,47 +1070,15 @@ const DonationFormSection = () => {
                 </h4>
 
                 {/* QR Code Container */}
-                <div className="bg-white p-4 rounded-2xl shadow-xl mb-4 max-w-[200px] w-full">
-                  <svg className="w-full h-auto" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="200" height="200" fill="white" />
-                    {/* Top-left position block */}
-                    <rect x="20" y="20" width="50" height="50" fill="#0A3231" rx="6" />
-                    <rect x="30" y="30" width="30" height="30" fill="white" rx="3" />
-                    <rect x="37" y="37" width="16" height="16" fill="#BD8C3B" rx="2" />
-
-                    {/* Top-right position block */}
-                    <rect x="130" y="20" width="50" height="50" fill="#0A3231" rx="6" />
-                    <rect x="140" y="30" width="30" height="30" fill="white" rx="3" />
-                    <rect x="147" y="37" width="16" height="16" fill="#BD8C3B" rx="2" />
-
-                    {/* Bottom-left position block */}
-                    <rect x="20" y="130" width="50" height="50" fill="#0A3231" rx="6" />
-                    <rect x="30" y="140" width="30" height="30" fill="white" rx="3" />
-                    <rect x="37" y="147" width="16" height="16" fill="#BD8C3B" rx="2" />
-
-                    {/* Pattern dots */}
-                    <rect x="80" y="20" width="12" height="12" fill="#0A3231" />
-                    <rect x="100" y="20" width="12" height="12" fill="#0A3231" />
-                    <rect x="80" y="40" width="12" height="12" fill="#BD8C3B" />
-                    <rect x="100" y="50" width="12" height="12" fill="#0A3231" />
-                    <rect x="80" y="80" width="12" height="12" fill="#0A3231" />
-                    <rect x="100" y="80" width="12" height="12" fill="#0A3231" />
-                    <rect x="20" y="90" width="12" height="12" fill="#0A3231" />
-                    <rect x="40" y="90" width="12" height="12" fill="#BD8C3B" />
-                    <rect x="60" y="90" width="12" height="12" fill="#0A3231" />
-                    <rect x="130" y="90" width="12" height="12" fill="#0A3231" />
-                    <rect x="150" y="90" width="12" height="12" fill="#BD8C3B" />
-                    <rect x="170" y="90" width="12" height="12" fill="#0A3231" />
-                    <rect x="80" y="110" width="12" height="12" fill="#BD8C3B" />
-                    <rect x="100" y="110" width="12" height="12" fill="#0A3231" />
-                    <rect x="120" y="110" width="12" height="12" fill="#0A3231" />
-                    <rect x="80" y="140" width="12" height="12" fill="#0A3231" />
-                    <rect x="100" y="150" width="12" height="12" fill="#BD8C3B" />
-                    <rect x="130" y="140" width="12" height="12" fill="#0A3231" />
-                    <rect x="160" y="140" width="12" height="12" fill="#0A3231" />
-                    <rect x="140" y="160" width="12" height="12" fill="#BD8C3B" />
-                    <rect x="170" y="170" width="12" height="12" fill="#0A3231" />
-                  </svg>
+                <div className="bg-white p-3.5 rounded-2xl shadow-xl mb-4 max-w-[210px] w-full flex items-center justify-center">
+                  <Image
+                    src={qrCodeImg}
+                    alt="Chishty Foundation UPI QR Code"
+                    width={200}
+                    height={200}
+                    className="w-full h-auto object-contain rounded-xl"
+                    priority
+                  />
                 </div>
 
                 <p className="text-white/80 text-xs mb-3">

@@ -54,6 +54,7 @@ export default function CauseFormModal({
           value={formData.image || ""}
           onChange={(url) => setFormData({ ...formData, image: url })}
           placeholder="Upload cause image..."
+          bucket="causes"
         />
 
         {/* Display Order */}

@@ -144,8 +144,8 @@ export async function createEvent(eventData: Omit<Event, "id" | "created_at" | "
   const slug = eventData.slug && eventData.slug.trim() !== ""
     ? slugify(eventData.slug)
     : eventData.title
-    ? slugify(eventData.title)
-    : `event-${Date.now()}`;
+      ? slugify(eventData.title)
+      : `event-${Date.now()}`;
 
   const payload = {
     is_featured: eventData.is_featured ?? false,
@@ -254,6 +254,9 @@ export interface DonationRecord {
   city?: string;
   country?: string;
   payment_method: string;
+  payment_id?: string;
+  razorpay_order_id?: string;
+  razorpay_signature?: string;
   status?: string;
 }
 
@@ -261,7 +264,7 @@ export async function submitDonationIntent(data: DonationRecord) {
   try {
     const payload = {
       ...data,
-      status: "pending",
+      status: data.status || (data.payment_id ? "completed" : "pending"),
       created_at: new Date().toISOString(),
     };
 
@@ -276,5 +279,105 @@ export async function submitDonationIntent(data: DonationRecord) {
   } catch (err: any) {
     console.warn("Error recording donation intent:", err.message);
     return { success: true };
+  }
+}
+
+/**
+ * Server action to create a Razorpay Order via Orders API
+ */
+export async function createRazorpayOrder(params: {
+  amount: number;
+  currency?: string;
+  receipt?: string;
+  notes?: Record<string, string>;
+}) {
+  const keyId = (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "").trim();
+  const keySecret = ("").trim();
+
+  if (!keyId || !keySecret || keyId === "your_razorpay_key_id" || keySecret === "your_razorpay_key_secret") {
+    return {
+      success: false,
+      error: "Razorpay credentials not configured. Please add your real Key ID and Key Secret in .env.local",
+    };
+  }
+
+  const numAmount = Number(params.amount);
+  if (isNaN(numAmount) || numAmount <= 0) {
+    return { success: false, error: "Invalid donation amount: must be greater than zero." };
+  }
+
+  const amountInPaise = Math.round(numAmount * 100);
+  const currency = (params.currency || "INR").toUpperCase();
+
+  try {
+    const auth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
+    const res = await fetch("https://api.razorpay.com/v1/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Basic ${auth}`,
+      },
+      body: JSON.stringify({
+        amount: amountInPaise,
+        currency,
+        receipt: params.receipt || `rcpt_${Date.now()}`,
+        notes: params.notes || {},
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      const errMsg =
+        res.status === 401
+          ? "Razorpay authentication failed: Invalid Key ID or Key Secret."
+          : data.error?.description || "Failed to create Razorpay order";
+      return { success: false, error: errMsg };
+    }
+
+    return {
+      success: true,
+      order: {
+        id: data.id as string,
+        amount: data.amount as number,
+        currency: data.currency as string,
+      },
+    };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to connect to Razorpay Orders API" };
+  }
+}
+
+/**
+ * Server action to securely verify Razorpay payment signature
+ */
+export async function verifyRazorpayPayment(params: {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}) {
+  const keySecret = (process.env.RAZORPAY_KEY_SECRET || "").trim();
+  if (!keySecret) {
+    return { success: false, error: "RAZORPAY_KEY_SECRET is not configured on server" };
+  }
+
+  if (!params.razorpay_order_id || !params.razorpay_payment_id || !params.razorpay_signature) {
+    return { success: false, error: "Incomplete payment verification parameters" };
+  }
+
+  try {
+    const crypto = await import("crypto");
+    const body = `${params.razorpay_order_id}|${params.razorpay_payment_id}`;
+    const expectedSignature = crypto
+      .createHmac("sha256", keySecret)
+      .update(body)
+      .digest("hex");
+
+    if (expectedSignature === params.razorpay_signature) {
+      return { success: true };
+    } else {
+      return { success: false, error: "Payment verification failed: Signature mismatch" };
+    }
+  } catch (err: any) {
+    return { success: false, error: err.message || "Error verifying payment signature" };
   }
 }
