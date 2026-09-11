@@ -297,73 +297,85 @@ const DonationFormSection = () => {
 
       // Online payment via Razorpay
       if (formData.paymentMethod === "Debit/Credit Card" || formData.paymentMethod === "UPI") {
-        // 1. Create Razorpay Order on server (via Supabase Edge Function)
-        const { createRazorpayOrder, verifyRazorpayPayment } = await import("@/app/(web)/action");
-        const orderRes = await createRazorpayOrder({
-          amount: parseFloat(formData.amount),
-          notes: {
-            category: formData.category,
-            donor_name: formData.fullName.trim(),
-            donor_email: formData.email.trim(),
-          },
-        });
+        const razorpayKey = (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_SfjnPRW22bJnBT").trim();
 
-        if (!orderRes.success || !orderRes.order) {
-          throw new Error(orderRes.error || "Failed to initialize payment order with Razorpay.");
-        }
+        let serverOrderId: string | undefined;
+        let amountInPaise = Math.round(parseFloat(formData.amount) * 100);
+        let currency = "INR";
 
-        const serverOrder = orderRes.order;
-        const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+        // Attempt server-side Razorpay order creation if configured
+        try {
+          const { createRazorpayOrder } = await import("@/app/(web)/action");
+          const orderRes = await createRazorpayOrder({
+            amount: parseFloat(formData.amount),
+            notes: {
+              category: formData.category,
+              donor_name: formData.fullName.trim(),
+              donor_email: formData.email.trim(),
+            },
+          });
 
-        if (!razorpayKey) {
-          throw new Error("Razorpay Key ID was not returned by the server or environment.");
+          if (orderRes?.success && orderRes.order?.id) {
+            serverOrderId = orderRes.order.id;
+            amountInPaise = orderRes.order.amount || amountInPaise;
+            currency = orderRes.order.currency || currency;
+          }
+        } catch (serverErr) {
+          console.warn("Continuing with standard checkout:", serverErr);
         }
 
         // 2. Open Razorpay Checkout modal
         try {
           const rawDigits = formData.phone.replace(/\D/g, "");
           const formattedDialPhone = `${selectedCountry.dialCode}${rawDigits}`;
-          const fullPhoneWithCode = `${selectedCountry.dialCode} ${formData.phone}`.trim();
 
-          const response = await openCheckout({
+          const checkoutOptions: any = {
             key: razorpayKey,
-            amount: serverOrder.amount,
-            currency: serverOrder.currency,
+            amount: amountInPaise,
+            currency: currency,
             name: "Chishty Foundation",
             description: `Donation for ${formData.category}`,
-            order_id: serverOrder.id,
             prefill: {
               name: formData.fullName.trim(),
               email: formData.email.trim(),
               contact: formattedDialPhone,
             },
             theme: { color: "#BD8C3B" },
-          });
+          };
+
+          if (serverOrderId) {
+            checkoutOptions.order_id = serverOrderId;
+          }
+
+          const response = await openCheckout(checkoutOptions);
 
           paymentId = response.razorpay_payment_id;
-          orderId = response.razorpay_order_id || serverOrder.id;
+          orderId = response.razorpay_order_id || serverOrderId;
           signature = response.razorpay_signature;
 
-          // 3. Verify Payment signature on backend via Supabase Edge Function
+          // 3. Verify Payment signature on backend if applicable
           if (signature && orderId) {
-            const verifyRes = await verifyRazorpayPayment({
-              razorpay_order_id: orderId,
-              razorpay_payment_id: paymentId,
-              razorpay_signature: signature,
-            });
-
-            if (!verifyRes.success) {
-              console.warn("Signature verification warning:", verifyRes.error);
+            try {
+              const { verifyRazorpayPayment } = await import("@/app/(web)/action");
+              await verifyRazorpayPayment({
+                razorpay_order_id: orderId,
+                razorpay_payment_id: paymentId,
+                razorpay_signature: signature,
+              });
+            } catch (verifyErr) {
+              console.warn("Signature verification warning:", verifyErr);
             }
           }
 
           setPaymentDetails({ paymentId, orderId });
         } catch (checkoutErr: any) {
-          if (checkoutErr?.message?.includes("cancelled")) {
+          const msg = String(checkoutErr?.message || "").toLowerCase();
+          if (msg.includes("cancel") || msg.includes("dismiss")) {
             setIsSubmitting(false);
-            return; // User cancelled the payment modal
+            return; // User cancelled modal
           }
-          throw checkoutErr;
+          console.error("Razorpay checkout error:", checkoutErr);
+          throw new Error("Unable to complete payment transaction.");
         }
       }
 
@@ -388,8 +400,11 @@ const DonationFormSection = () => {
 
       setSubmissionStatus("success");
     } catch (err: any) {
+      console.error("Donation submission error:", err);
       setSubmissionStatus("error");
-      setErrorMessage(err.message || "An unexpected error occurred during processing. Please try again.");
+      setErrorMessage(
+        "We were unable to process your payment online at this moment. You may try again or contribute directly using our official bank details below."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -750,23 +765,23 @@ const DonationFormSection = () => {
                   exit={{ opacity: 0, scale: 0.95 }}
                   className="py-10 text-center"
                 >
-                  <div className="w-20 h-20 mx-auto rounded-full bg-red-100 flex items-center justify-center text-red-600 mb-6">
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-red-50 flex items-center justify-center text-red-500 mb-5">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <circle cx="12" cy="12" r="10" />
                       <line x1="15" y1="9" x2="9" y2="15" />
                       <line x1="9" y1="9" x2="15" y2="15" />
                     </svg>
                   </div>
 
-                  <h3 className="font-cormorant font-bold text-3xl text-red-700 mb-3">
-                    Payment Processing Notice
+                  <h3 className="font-cormorant font-bold text-3xl text-dark-green mb-3">
+                    Payment Incomplete
                   </h3>
 
-                  <p className="text-dark-green/75 max-w-md mx-auto text-base mb-6 leading-relaxed">
-                    {errorMessage || "We encountered an issue preparing your transaction. You may also transfer directly via our official bank details."}
+                  <p className="text-dark-green/75 max-w-md mx-auto text-sm md:text-base mb-6 leading-relaxed">
+                    {errorMessage || "We were unable to process your payment online right now. You can try again or contribute directly using our official bank details below."}
                   </p>
 
-                  <div className="flex gap-3 justify-center">
+                  <div className="flex flex-wrap gap-3 justify-center">
                     <button
                       type="button"
                       onClick={() => setSubmissionStatus("idle")}
@@ -776,6 +791,7 @@ const DonationFormSection = () => {
                     </button>
                     <a
                       href="#bank-details"
+                      onClick={() => setSubmissionStatus("idle")}
                       className="rounded-full bg-dark-yellow text-white px-6 py-2.5 text-sm font-medium hover:bg-dark-yellow/90 transition-colors"
                     >
                       View Bank Details

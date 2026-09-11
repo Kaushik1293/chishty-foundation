@@ -291,13 +291,14 @@ export async function createRazorpayOrder(params: {
   receipt?: string;
   notes?: Record<string, string>;
 }) {
-  const keyId = (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "").trim();
-  const keySecret = ("").trim();
+  const keyId = (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID || "").trim();
+  const keySecret = (process.env.RAZORPAY_KEY_SECRET || "").trim();
 
   if (!keyId || !keySecret || keyId === "your_razorpay_key_id" || keySecret === "your_razorpay_key_secret") {
     return {
       success: false,
-      error: "Razorpay credentials not configured. Please add your real Key ID and Key Secret in .env.local",
+      fallbackToDirect: Boolean(keyId && keyId !== "your_razorpay_key_id"),
+      error: "Razorpay server secret not configured.",
     };
   }
 

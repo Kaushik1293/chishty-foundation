@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Cormorant_Garamond, Dancing_Script } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -47,6 +48,7 @@ export default function RootLayout({
       `}
     >
       <body className="min-h-full flex flex-col">
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
         <GoogleTranslateScript />
         <Navbar/>
         {children}
