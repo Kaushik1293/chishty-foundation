@@ -291,8 +291,8 @@ export async function createRazorpayOrder(params: {
   receipt?: string;
   notes?: Record<string, string>;
 }) {
-  const keyId = (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID || "").trim();
-  const keySecret = (process.env.RAZORPAY_KEY_SECRET || "").trim();
+  const keyId = ('rzp_live_Teib5d3ArzpPCt').trim();
+  const keySecret = ('Y65P96BVVxilDS5GPAce1ebT').trim();
 
   if (!keyId || !keySecret || keyId === "your_razorpay_key_id" || keySecret === "your_razorpay_key_secret") {
     return {
