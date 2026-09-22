@@ -16,9 +16,11 @@ import {
   RotateCcw,
   Edit,
   Receipt,
-  MapPin,
   Phone,
   Mail,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUpDown,
 } from "lucide-react";
 import { DonationRecord } from "@/app/(asgard)/asgard/donations/actions";
 import { formatDateDDMMYYYY } from "@/src/utils/formatDate";
@@ -28,8 +30,9 @@ interface DonationsTableProps {
   filteredDonations: DonationRecord[];
   isLoading: boolean;
   handleOpenDetail: (donation: DonationRecord) => void;
-  handleOpenStatusModal: (donation: DonationRecord) => void;
+  handleOpenEdit: (donation: DonationRecord) => void;
   handleOpenDelete: (donation: DonationRecord) => void;
+  handleResetFilters: () => void;
 }
 
 export default function DonationsTable({
@@ -37,10 +40,13 @@ export default function DonationsTable({
   filteredDonations,
   isLoading,
   handleOpenDetail,
-  handleOpenStatusModal,
+  handleOpenEdit,
   handleOpenDelete,
+  handleResetFilters,
 }: DonationsTableProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -51,37 +57,38 @@ export default function DonationsTable({
   const getStatusBadge = (status?: string) => {
     const s = (status || "pending").toLowerCase();
     switch (s) {
+      case "success":
       case "completed":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
             <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-            Completed
+            SUCCESS
           </span>
         );
       case "pending":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-300">
             <Clock className="w-3 h-3 text-amber-600" />
-            Pending
+            PENDING
           </span>
         );
       case "failed":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-red-100 text-red-800 border border-red-300">
             <AlertCircle className="w-3 h-3 text-red-600" />
-            Failed
+            FAILED
           </span>
         );
-      case "refunded":
+      case "cancelled":
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-800 border border-slate-300">
-            <RotateCcw className="w-3 h-3 text-slate-600" />
-            Refunded
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-stone-100 text-stone-700 border border-stone-300">
+            <RotateCcw className="w-3 h-3 text-stone-500" />
+            CANCELLED
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-beige text-dark-green/70 border border-stroke">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-beige text-dark-green/70 border border-stroke uppercase">
             {status}
           </span>
         );
@@ -107,18 +114,29 @@ export default function DonationsTable({
     }
   };
 
+  // Pagination calculation
+  const totalItems = filteredDonations.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedDonations = filteredDonations.slice(startIndex, endIndex);
+
   return (
     <div className="bg-white border border-stroke rounded-2xl shadow-sm overflow-hidden font-satoshi">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-beige border-b border-stroke text-[11px] font-semibold text-dark-green/70 uppercase tracking-wider">
-              <th className="py-3.5 px-4">Donor Information</th>
+              <th className="py-3.5 px-4">Donor</th>
+              <th className="py-3.5 px-4">Email</th>
+              <th className="py-3.5 px-4">Phone</th>
               <th className="py-3.5 px-4">Amount</th>
-              <th className="py-3.5 px-4">Cause / Category</th>
-              <th className="py-3.5 px-4">Payment & Transaction</th>
-              <th className="py-3.5 px-4">Status</th>
-              <th className="py-3.5 px-4">Date</th>
+              <th className="py-3.5 px-4">Donation Type</th>
+              <th className="py-3.5 px-4">Payment Status</th>
+              <th className="py-3.5 px-4">Payment Method</th>
+              <th className="py-3.5 px-4">Transaction ID</th>
+              <th className="py-3.5 px-4">Created At</th>
               <th className="py-3.5 px-4 text-right">Actions</th>
             </tr>
           </thead>
@@ -126,16 +144,17 @@ export default function DonationsTable({
           <tbody className="divide-y divide-stroke/60 text-xs">
             {isLoading ? (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-dark-green/50">
+                <td colSpan={10} className="py-12 text-center text-dark-green/50">
                   <Loader2 className="w-7 h-7 mx-auto mb-2 animate-spin text-dark-yellow" />
                   <p className="font-semibold text-xs">Loading donations...</p>
                 </td>
               </tr>
-            ) : filteredDonations.length > 0 ? (
-              filteredDonations.map((item, idx) => {
-                const uniqueKey = String(item.id || item.payment_id || `don_${idx}`);
+            ) : paginatedDonations.length > 0 ? (
+              paginatedDonations.map((item, idx) => {
+                const uniqueKey = String(item.id || item.transaction_id || `don_${idx}`);
                 const formattedAmount = Number(item.amount || 0).toLocaleString("en-IN");
                 const formattedDate = item.created_at ? formatDateDDMMYYYY(item.created_at) : "—";
+                const displayName = item.donor_name || (item.is_anonymous ? "Anonymous" : "—");
 
                 return (
                   <motion.tr
@@ -144,129 +163,120 @@ export default function DonationsTable({
                     animate={{ opacity: 1 }}
                     className="hover:bg-beige/60 transition-colors group"
                   >
-                    {/* Donor Information */}
-                    <td className="py-4 px-4 max-w-xs">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-bold text-dark-green text-sm group-hover:text-dark-yellow transition-colors">
-                          {item.full_name || "Anonymous Donor"}
+                    {/* 1. Donor */}
+                    <td className="py-3.5 px-4 font-bold text-dark-green text-xs max-w-[140px] truncate">
+                      <div className="flex items-center gap-1.5" title={displayName}>
+                        <span className="truncate group-hover:text-dark-yellow transition-colors">
+                          {displayName}
                         </span>
-                        <div className="flex items-center gap-2 text-dark-green/70 text-[11px]">
-                          <span className="flex items-center gap-1 truncate" title={item.email}>
-                            <Mail className="w-3 h-3 text-dark-green/40 shrink-0" />
-                            {item.email}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-dark-green/60 text-[11px]">
-                          {item.phone && (
-                            <span className="flex items-center gap-1">
-                              <Phone className="w-3 h-3 text-dark-green/40 shrink-0" />
-                              {item.phone}
-                            </span>
-                          )}
-                          {item.city && (
-                            <span className="flex items-center gap-1">
-                              <MapPin className="w-3 h-3 text-dark-green/40 shrink-0" />
-                              {item.city}
-                              {item.country && item.country !== "India" ? `, ${item.country}` : ""}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Amount */}
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      <span className="font-bold font-satoshi text-dark-green text-base">
-                        ₹{formattedAmount}
-                      </span>
-                    </td>
-
-                    {/* Category */}
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      <span
-                        className={`inline-block px-2.5 py-1 rounded-lg border font-medium text-[11px] ${getCategoryBadgeClass(
-                          item.category
-                        )}`}
-                      >
-                        {item.category}
-                      </span>
-                    </td>
-
-                    {/* Payment & Transaction */}
-                    <td className="py-4 px-4 max-w-[200px]">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1.5 font-medium text-dark-green">
-                          <CreditCard className="w-3.5 h-3.5 text-dark-yellow shrink-0" />
-                          <span>{item.payment_method || "Online"}</span>
-                        </div>
-
-                        {item.payment_id ? (
-                          <div className="flex items-center gap-1">
-                            <span
-                              className="font-mono text-[10px] text-dark-green/70 truncate max-w-[130px] bg-dark-green/5 px-1.5 py-0.5 rounded border border-stroke"
-                              title={item.payment_id}
-                            >
-                              {item.payment_id}
-                            </span>
-                            <button
-                              onClick={() => handleCopy(item.payment_id!, `pid_${uniqueKey}`)}
-                              className="p-1 text-dark-green/50 hover:text-dark-yellow transition-colors cursor-pointer"
-                              title="Copy Payment ID"
-                            >
-                              {copiedId === `pid_${uniqueKey}` ? (
-                                <Check className="w-3 h-3 text-emerald-600" />
-                              ) : (
-                                <Copy className="w-3 h-3" />
-                              )}
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-[10px] text-dark-green/40 italic">
-                            No payment ID
+                        {item.is_anonymous && (
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-stone-100 text-stone-600 border border-stone-200">
+                            Anon
                           </span>
                         )}
                       </div>
                     </td>
 
-                    {/* Status */}
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      {getStatusBadge(item.status)}
+                    {/* 2. Email */}
+                    <td className="py-3.5 px-4 text-dark-green/70 text-xs max-w-[150px] truncate">
+                      {item.donor_email ? (
+                        <span className="truncate block" title={item.donor_email}>
+                          {item.donor_email}
+                        </span>
+                      ) : (
+                        <span className="text-dark-green/30 italic">—</span>
+                      )}
                     </td>
 
-                    {/* Date */}
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5 text-dark-green/80 font-mono text-xs">
-                        <Calendar className="w-3.5 h-3.5 text-dark-yellow" />
-                        <span>{formattedDate}</span>
-                      </div>
+                    {/* 3. Phone */}
+                    <td className="py-3.5 px-4 text-dark-green/80 font-mono text-xs whitespace-nowrap">
+                      {item.donor_phone || <span className="text-dark-green/30 italic font-sans">—</span>}
                     </td>
 
-                    {/* Actions */}
-                    <td className="py-4 px-4 text-right whitespace-nowrap">
+                    {/* 4. Amount */}
+                    <td className="py-3.5 px-4 whitespace-nowrap font-bold text-dark-green text-xs">
+                      ₹{formattedAmount}
+                    </td>
+
+                    {/* 5. Donation Type */}
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      <span
+                        className={`inline-block px-2.5 py-0.5 rounded-lg border font-medium text-[11px] ${getCategoryBadgeClass(
+                          item.donation_type
+                        )}`}
+                      >
+                        {item.donation_type || "General"}
+                      </span>
+                    </td>
+
+                    {/* 6. Payment Status */}
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      {getStatusBadge(item.payment_status)}
+                    </td>
+
+                    {/* 7. Payment Method */}
+                    <td className="py-3.5 px-4 whitespace-nowrap text-dark-green/80 font-medium text-xs">
+                      {item.payment_method || "Online"}
+                    </td>
+
+                    {/* 8. Transaction ID */}
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      {item.transaction_id ? (
+                        <div className="flex items-center gap-1">
+                          <span
+                            className="font-mono text-[10px] text-dark-green/70 truncate max-w-[110px] bg-dark-green/5 px-1.5 py-0.5 rounded border border-stroke"
+                            title={item.transaction_id}
+                          >
+                            {item.transaction_id}
+                          </span>
+                          <button
+                            onClick={() => handleCopy(item.transaction_id!, `pid_${uniqueKey}`)}
+                            className="p-1 text-dark-green/50 hover:text-dark-yellow transition-colors cursor-pointer"
+                            title="Copy Transaction ID"
+                          >
+                            {copiedId === `pid_${uniqueKey}` ? (
+                              <Check className="w-3 h-3 text-emerald-600" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] text-dark-green/30 italic">—</span>
+                      )}
+                    </td>
+
+                    {/* 9. Created At */}
+                    <td className="py-3.5 px-4 whitespace-nowrap text-dark-green/70 font-mono text-xs">
+                      {formattedDate}
+                    </td>
+
+                    {/* 10. Actions */}
+                    <td className="py-3.5 px-4 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1">
-                        {/* View Receipt / Details */}
+                        {/* View */}
                         <button
                           onClick={() => handleOpenDetail(item)}
-                          className="p-2 rounded-xl text-dark-green/70 hover:text-dark-green hover:bg-dark-green/5 transition-colors cursor-pointer"
-                          title="View Details / Receipt"
+                          className="p-1.5 rounded-lg text-dark-green/70 hover:text-dark-green hover:bg-dark-green/10 transition-colors cursor-pointer"
+                          title="View Donation"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
 
-                        {/* Change Status */}
+                        {/* Edit */}
                         <button
-                          onClick={() => handleOpenStatusModal(item)}
-                          className="p-2 rounded-xl text-dark-green/70 hover:text-dark-yellow hover:bg-dark-yellow/10 transition-colors cursor-pointer"
-                          title="Update Status / Notes"
+                          onClick={() => handleOpenEdit(item)}
+                          className="p-1.5 rounded-lg text-dark-yellow hover:bg-dark-yellow/10 transition-colors cursor-pointer"
+                          title="Edit Donation"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
 
-                        {/* Delete Entry */}
+                        {/* Delete */}
                         <button
                           onClick={() => handleOpenDelete(item)}
-                          className="p-2 rounded-xl text-red-500/70 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                          title="Delete Record"
+                          className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                          title="Delete Donation"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -277,12 +287,29 @@ export default function DonationsTable({
               })
             ) : (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-dark-green/50">
+                <td colSpan={10} className="py-12 text-center text-dark-green/50">
                   <Receipt className="w-8 h-8 mx-auto mb-2 text-dark-green/30" />
-                  <p className="font-semibold text-sm text-dark-green">No donation entries found</p>
-                  <p className="text-xs text-dark-green/60 mt-0.5">
-                    Try adjusting your search terms or filters above.
-                  </p>
+                  {donations.length === 0 ? (
+                    <>
+                      <p className="font-semibold text-sm text-dark-green">No donations found</p>
+                      <p className="text-xs text-dark-green/60 mt-0.5">
+                        No donation records in the database yet.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-semibold text-sm text-dark-green">No donations match your filters.</p>
+                      <p className="text-xs text-dark-green/60 mt-0.5">
+                        Try adjusting your search keyword or selected filter criteria.
+                      </p>
+                      <button
+                        onClick={handleResetFilters}
+                        className="mt-3 px-3 py-1.5 rounded-xl bg-beige border border-stroke text-dark-green font-semibold text-xs hover:bg-dark-yellow/15 transition-colors cursor-pointer"
+                      >
+                        Reset Filters
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             )}
@@ -290,12 +317,61 @@ export default function DonationsTable({
         </table>
       </div>
 
-      {/* Table Footer */}
-      <div className="p-4 bg-beige/40 border-t border-stroke flex items-center justify-between text-xs text-dark-green/70">
+      {/* Pagination Footer */}
+      <div className="p-4 bg-beige border-t border-stroke flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-dark-green/70">
         <span>
-          Showing <strong className="text-dark-green">{filteredDonations.length}</strong> of{" "}
-          <strong className="text-dark-green">{donations.length}</strong> donations
+          Showing <strong>{totalItems > 0 ? startIndex + 1 : 0}</strong> to{" "}
+          <strong>{endIndex}</strong> of <strong>{totalItems}</strong> donations
+          {totalItems !== donations.length && (
+            <span className="text-dark-green/50 ml-1">(filtered from {donations.length} total)</span>
+          )}
         </span>
+
+        {/* Pagination buttons */}
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={safeCurrentPage <= 1}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-stroke bg-white text-dark-green hover:bg-beige transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-medium"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+            <span>Previous</span>
+          </button>
+
+          <div className="flex items-center gap-1 px-2">
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter((p) => p === 1 || p === totalPages || Math.abs(p - safeCurrentPage) <= 1)
+              .map((pageNum, idx, arr) => {
+                const prev = arr[idx - 1];
+                const showEllipsis = prev && pageNum - prev > 1;
+
+                return (
+                  <React.Fragment key={pageNum}>
+                    {showEllipsis && <span className="px-1 text-dark-green/40">...</span>}
+                    <button
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-7 h-7 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                        safeCurrentPage === pageNum
+                          ? "bg-dark-yellow text-white"
+                          : "bg-white border border-stroke text-dark-green hover:bg-beige"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  </React.Fragment>
+                );
+              })}
+          </div>
+
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={safeCurrentPage >= totalPages}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-stroke bg-white text-dark-green hover:bg-beige transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-medium"
+          >
+            <span>Next</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
     </div>
   );

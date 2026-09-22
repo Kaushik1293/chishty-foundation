@@ -68,7 +68,10 @@ export default function AsgardDashboardPage() {
   const activeMedia = media.filter((m) => m.is_active).length;
 
   const totalDonations = donations.length;
-  const completedDonations = donations.filter((d) => (d.status || "").toLowerCase() === "completed");
+  const completedDonations = donations.filter((d) => {
+    const s = (d.payment_status || "").toLowerCase();
+    return s === "success" || s === "completed";
+  });
   const totalAmountRaised = completedDonations.reduce((sum, d) => sum + Number(d.amount || 0), 0);
 
   const stats = [
@@ -480,24 +483,28 @@ export default function AsgardDashboardPage() {
                       <div className="min-w-0 pr-2">
                         <div className="flex items-center gap-1.5">
                           <p className="font-bold text-dark-green truncate">
-                            {don.full_name || "Anonymous"}
+                            {don.donor_name || (don.is_anonymous ? "Anonymous" : "Donor")}
                           </p>
                           <span className="text-[10px] font-mono text-dark-yellow font-bold">
                             ₹{Number(don.amount || 0).toLocaleString("en-IN")}
                           </span>
                         </div>
                         <p className="text-[10px] text-dark-green/60 truncate">
-                          {don.category} • {don.payment_method}
+                          {don.donation_type} • {don.payment_method}
                         </p>
                       </div>
                       <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border shrink-0 ${
-                          (don.status || "").toLowerCase() === "completed"
-                            ? "bg-emerald-100 text-emerald-800 border-emerald-300"
-                            : "bg-amber-100 text-amber-800 border-amber-300"
-                        }`}
+                        className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border shrink-0 ${(don.payment_status || "").toLowerCase() === "success" ||
+                          (don.payment_status || "").toLowerCase() === "completed"
+                          ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                          : (don.payment_status || "").toLowerCase() === "pending"
+                            ? "bg-amber-100 text-amber-800 border-amber-300"
+                            : (don.payment_status || "").toLowerCase() === "failed"
+                              ? "bg-red-100 text-red-800 border-red-300"
+                              : "bg-stone-100 text-stone-700 border-stone-300"
+                          }`}
                       >
-                        {don.status || "Pending"}
+                        {(don.payment_status || "Pending").toUpperCase()}
                       </span>
                     </div>
                   ))}

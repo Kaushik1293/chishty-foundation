@@ -10,7 +10,7 @@ interface DonationStatusModalProps {
   onClose: () => void;
   donation: DonationRecord | null;
   isSubmitting: boolean;
-  handleStatusUpdate: (id: string | number, status: "completed" | "pending" | "failed" | "refunded", notes?: string) => Promise<void>;
+  handleStatusUpdate: (id: string, status: "success" | "completed" | "pending" | "failed" | "cancelled" | "refunded" | string, admin_notes?: string) => Promise<void>;
 }
 
 export default function DonationStatusModal({
@@ -20,13 +20,13 @@ export default function DonationStatusModal({
   isSubmitting,
   handleStatusUpdate,
 }: DonationStatusModalProps) {
-  const [status, setStatus] = useState<"completed" | "pending" | "failed" | "refunded">("completed");
-  const [notes, setNotes] = useState<string>("");
+  const [status, setStatus] = useState<"success" | "completed" | "pending" | "failed" | "cancelled" | "refunded" | string>("success");
+  const [adminNotes, setAdminNotes] = useState<string>("");
 
   useEffect(() => {
     if (donation) {
-      setStatus(donation.status || "completed");
-      setNotes(donation.notes || "");
+      setStatus(donation.payment_status || "success");
+      setAdminNotes(donation.admin_notes || "");
     }
   }, [donation]);
 
@@ -35,13 +35,13 @@ export default function DonationStatusModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!donation.id) return;
-    handleStatusUpdate(donation.id, status, notes);
+    handleStatusUpdate(donation.id, status, adminNotes);
   };
 
-  const statusOptions: { value: "completed" | "pending" | "failed" | "refunded"; label: string; desc: string; icon: any; color: string }[] = [
+  const statusOptions: { value: "success" | "pending" | "failed" | "cancelled" | "refunded"; label: string; desc: string; icon: any; color: string }[] = [
     {
-      value: "completed",
-      label: "Completed / Verified",
+      value: "success",
+      label: "Success / Verified",
       desc: "Payment has been received and confirmed successfully",
       icon: CheckCircle2,
       color: "text-emerald-700 bg-emerald-50 border-emerald-300",
@@ -52,6 +52,13 @@ export default function DonationStatusModal({
       desc: "Payment is pending verification, settlement, or manual check",
       icon: Clock,
       color: "text-amber-700 bg-amber-50 border-amber-300",
+    },
+    {
+      value: "cancelled",
+      label: "Cancelled",
+      desc: "User closed checkout or donation attempt was cancelled",
+      icon: RotateCcw,
+      color: "text-stone-700 bg-stone-50 border-stone-300",
     },
     {
       value: "failed",
@@ -74,7 +81,7 @@ export default function DonationStatusModal({
       isOpen={isOpen}
       onClose={onClose}
       title="Update Donation Status"
-      subtitle={`Donor: ${donation.full_name || "Anonymous"} • Amount: ₹${Number(donation.amount || 0).toLocaleString("en-IN")}`}
+      subtitle={`Donor: ${donation.donor_name || "Anonymous"} • Amount: ₹${Number(donation.amount || 0).toLocaleString("en-IN")}`}
       maxWidth="max-w-lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4 font-satoshi text-dark-green">
@@ -113,8 +120,8 @@ export default function DonationStatusModal({
           </label>
           <textarea
             rows={2}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            value={adminNotes}
+            onChange={(e) => setAdminNotes(e.target.value)}
             placeholder="Add internal remarks about status change..."
             className="w-full px-3.5 py-2.5 bg-beige border border-stroke rounded-xl text-xs text-dark-green placeholder:text-dark-green/40 focus:outline-none focus:border-dark-yellow resize-none"
           />
