@@ -291,48 +291,57 @@ const DonationFormSection = () => {
     setErrorMessage("");
 
     try {
-      let paymentId: string | undefined;
-      let orderId: string | undefined;
-      let signature: string | undefined;
+      const fullPhone = `${selectedCountry.dialCode} ${formData.phone}`.trim();
+      const donorLocation = [
+        formData.address.trim(),
+        formData.city.trim(),
+        formData.country.trim() || selectedCountry.name,
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+      const {
+        initiateOnlineDonation,
+        verifyAndCompleteDonation,
+        markDonationStatus,
+        recordOfflineDonation,
+      } = await import("@/app/(web)/action");
 
       // Online payment via Razorpay
       if (formData.paymentMethod === "Debit/Credit Card" || formData.paymentMethod === "UPI") {
-        const razorpayKey = (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_SfjnPRW22bJnBT").trim();
+        // 1. INITIATE: Create Razorpay Order & Insert ONE pending Supabase row
+        const initRes = await initiateOnlineDonation({
+          donor_name: formData.fullName.trim(),
+          donor_email: formData.email.trim(),
+          donor_phone: fullPhone,
+          amount: parseFloat(formData.amount),
+          currency: "INR",
+          donation_type: formData.category,
+          message: donorLocation || undefined,
+          is_anonymous: false,
+          payment_method: formData.paymentMethod,
+        });
 
-        let serverOrderId: string | undefined;
-        let amountInPaise = Math.round(parseFloat(formData.amount) * 100);
-        let currency = "INR";
-
-        // Attempt server-side Razorpay order creation if configured
-        try {
-          const { createRazorpayOrder } = await import("@/app/(web)/action");
-          const orderRes = await createRazorpayOrder({
-            amount: parseFloat(formData.amount),
-            notes: {
-              category: formData.category,
-              donor_name: formData.fullName.trim(),
-              donor_email: formData.email.trim(),
-            },
-          });
-
-          if (orderRes?.success && orderRes.order?.id) {
-            serverOrderId = orderRes.order.id;
-            amountInPaise = orderRes.order.amount || amountInPaise;
-            currency = orderRes.order.currency || currency;
-          }
-        } catch (serverErr) {
-          console.warn("Continuing with standard checkout:", serverErr);
+        if (!initRes.success || !initRes.donation_id) {
+          throw new Error(initRes.error || "Failed to initialize donation record");
         }
 
-        // 2. Open Razorpay Checkout modal
+        const donationId = initRes.donation_id;
+        const serverOrderId = initRes.order_id;
+        const amountInPaise = initRes.amount_paise || Math.round(parseFloat(formData.amount) * 100);
+        const razorpayKey = initRes.key_id || (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_live_Teib5d3ArzpPCt").trim();
+
+        // 2. OPEN CHECKOUT: Open Razorpay Popup
+        let paymentId: string | undefined;
+        let orderId: string | undefined;
+        let signature: string | undefined;
+
         try {
           const rawDigits = formData.phone.replace(/\D/g, "");
           const formattedDialPhone = `${selectedCountry.dialCode}${rawDigits}`;
 
           const checkoutOptions: any = {
             key: razorpayKey,
-            amount: amountInPaise,
-            currency: currency,
             name: "Chishty Foundation",
             description: `Donation for ${formData.category}`,
             prefill: {
@@ -345,6 +354,9 @@ const DonationFormSection = () => {
 
           if (serverOrderId) {
             checkoutOptions.order_id = serverOrderId;
+          } else {
+            checkoutOptions.amount = amountInPaise;
+            checkoutOptions.currency = "INR";
           }
 
           const response = await openCheckout(checkoutOptions);
@@ -352,57 +364,73 @@ const DonationFormSection = () => {
           paymentId = response.razorpay_payment_id;
           orderId = response.razorpay_order_id || serverOrderId;
           signature = response.razorpay_signature;
-
-          // 3. Verify Payment signature on backend if applicable
-          if (signature && orderId) {
-            try {
-              const { verifyRazorpayPayment } = await import("@/app/(web)/action");
-              await verifyRazorpayPayment({
-                razorpay_order_id: orderId,
-                razorpay_payment_id: paymentId,
-                razorpay_signature: signature,
-              });
-            } catch (verifyErr) {
-              console.warn("Signature verification warning:", verifyErr);
-            }
-          }
-
-          setPaymentDetails({ paymentId, orderId });
         } catch (checkoutErr: any) {
           const msg = String(checkoutErr?.message || "").toLowerCase();
           if (msg.includes("cancel") || msg.includes("dismiss")) {
+            // User closed/cancelled checkout -> Update SAME row to 'cancelled'
+            await markDonationStatus({
+              donation_id: donationId,
+              order_id: serverOrderId,
+              status: "cancelled",
+            });
             setIsSubmitting(false);
-            return; // User cancelled modal
+            return;
           }
+          // Payment failed
+          await markDonationStatus({
+            donation_id: donationId,
+            order_id: serverOrderId,
+            status: "failed",
+          });
           console.error("Razorpay checkout error:", checkoutErr);
           throw new Error("Unable to complete payment transaction.");
         }
+
+        // 3. VERIFY & UPDATE: Server-side signature verification & update SAME row to 'success'
+        if (signature && orderId && paymentId) {
+          const verifyRes = await verifyAndCompleteDonation({
+            donation_id: donationId,
+            razorpay_order_id: orderId,
+            razorpay_payment_id: paymentId,
+            razorpay_signature: signature,
+            payment_method: formData.paymentMethod,
+          });
+
+          if (!verifyRes.success) {
+            throw new Error(verifyRes.error || "Payment signature verification failed");
+          }
+
+          setPaymentDetails({ paymentId, orderId });
+          setSubmissionStatus("success");
+        } else {
+          throw new Error("Incomplete payment response received.");
+        }
+      } else {
+        // Offline / Bank transfer submission
+        const offlineRes = await recordOfflineDonation({
+          donor_name: formData.fullName.trim(),
+          donor_email: formData.email.trim(),
+          donor_phone: fullPhone,
+          amount: parseFloat(formData.amount),
+          currency: "INR",
+          donation_type: formData.category,
+          message: donorLocation || undefined,
+          is_anonymous: false,
+          payment_method: formData.paymentMethod,
+          payment_status: "success",
+        });
+
+        if (!offlineRes.success) {
+          throw new Error(offlineRes.error || "Failed to record donation");
+        }
+
+        setSubmissionStatus("success");
       }
-
-      // 4. Record donation in database
-      const fullPhone = `${selectedCountry.dialCode} ${formData.phone}`.trim();
-      const { submitDonationIntent } = await import("@/app/(web)/action");
-      await submitDonationIntent({
-        category: formData.category,
-        amount: parseFloat(formData.amount),
-        full_name: formData.fullName.trim(),
-        email: formData.email.trim(),
-        phone: fullPhone,
-        address: formData.address.trim() || undefined,
-        city: formData.city.trim() || undefined,
-        country: formData.country.trim() || selectedCountry.name,
-        payment_method: formData.paymentMethod,
-        payment_id: paymentId,
-        razorpay_order_id: orderId,
-        razorpay_signature: signature,
-        status: paymentId ? "completed" : "pending",
-      });
-
-      setSubmissionStatus("success");
     } catch (err: any) {
       console.error("Donation submission error:", err);
       setSubmissionStatus("error");
       setErrorMessage(
+        err?.message ||
         "We were unable to process your payment online at this moment. You may try again or contribute directly using our official bank details below."
       );
     } finally {
@@ -1044,7 +1072,7 @@ const DonationFormSection = () => {
                       {isSubmitting ? (
                         <>
                           <SpinnerIcon />
-                          <span>Processing...</span>
+                          <span>Creating payment...</span>
                         </>
                       ) : (
                         <>
