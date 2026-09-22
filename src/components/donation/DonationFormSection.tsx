@@ -141,7 +141,7 @@ interface DonationFormData {
   paymentMethod: PaymentMethod;
 }
 
-const DEFAULT_UPI_ID = "chishtyfoundation@boi";
+const DEFAULT_UPI_ID = "mschishtyfoundation.easypay1@icici";
 
 const DonationFormSection = () => {
   const { openCheckout } = useRazorpayCheckout();
@@ -875,7 +875,7 @@ const DonationFormSection = () => {
                       </label>
                       <input
                         type="text"
-                        placeholder="e.g. Haji Syed Salman"
+                        placeholder="e.g. John Doe"
                         value={formData.fullName}
                         onChange={handleInputChange("fullName")}
                         className={`${inputBaseClasses} ${errors.fullName ? "border-red-400" : "border-transparent"}`}
@@ -924,9 +924,8 @@ const DonationFormSection = () => {
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="2.5"
-                            className={`transition-transform duration-200 text-dark-green/60 ${
-                              isCountryDropdownOpen ? "rotate-180" : ""
-                            }`}
+                            className={`transition-transform duration-200 text-dark-green/60 ${isCountryDropdownOpen ? "rotate-180" : ""
+                              }`}
                           >
                             <polyline points="6 9 12 15 18 9" />
                           </svg>
@@ -940,9 +939,8 @@ const DonationFormSection = () => {
                           placeholder={selectedCountry.placeholder}
                           value={formData.phone}
                           onChange={handlePhoneChange}
-                          className={`${inputBaseClasses} rounded-l-none pl-3 ${
-                            errors.phone ? "border-red-400" : "border-transparent"
-                          }`}
+                          className={`${inputBaseClasses} rounded-l-none pl-3 ${errors.phone ? "border-red-400" : "border-transparent"
+                            }`}
                         />
 
                         {/* Searchable Country Dropdown Modal */}
@@ -967,11 +965,10 @@ const DonationFormSection = () => {
                                   key={country.code}
                                   type="button"
                                   onClick={() => handleSelectCountry(country)}
-                                  className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg transition-colors text-left cursor-pointer ${
-                                    selectedCountry.code === country.code
-                                      ? "bg-dark-yellow/15 text-dark-green font-bold"
-                                      : "hover:bg-[#FAF6EE] text-dark-green"
-                                  }`}
+                                  className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg transition-colors text-left cursor-pointer ${selectedCountry.code === country.code
+                                    ? "bg-dark-yellow/15 text-dark-green font-bold"
+                                    : "hover:bg-[#FAF6EE] text-dark-green"
+                                    }`}
                                 >
                                   <span className="flex items-center gap-2.5 truncate">
                                     <CountryFlag code={country.code} name={country.name} className="w-5 h-3.5" />
@@ -1117,80 +1114,6 @@ const DonationFormSection = () => {
               </div>
             </motion.div>
 
-            {/* Primary Account (BOI) */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, ease: EASE, delay: 0.1 }}
-              className="bg-white rounded-3xl p-6 border border-[#F1E3D7] shadow-sm relative overflow-hidden"
-            >
-              <div className="flex items-center justify-between mb-4 border-b border-[#F2E7D6] pb-3">
-                <div>
-                  <span className="text-[11px] font-bold text-dark-yellow uppercase tracking-wider">
-                    Primary Account
-                  </span>
-                  <h4 className="font-cormorant font-bold text-xl text-dark-green">
-                    Bank of India (BOI) — Ajmer Branch
-                  </h4>
-                </div>
-                <span className="px-2.5 py-1 rounded-full bg-dark-green/10 text-dark-green text-[11px] font-bold">
-                  Official
-                </span>
-              </div>
-
-              <div className="space-y-3 text-xs sm:text-sm">
-                <div className="flex justify-between items-center bg-beige p-2.5 rounded-xl border border-[#ECE2CB]">
-                  <div>
-                    <span className="text-dark-green/60 block text-[11px]">Account Name</span>
-                    <strong className="text-dark-green font-semibold">CHISHTY FOUNDATION</strong>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleCopy("CHISHTY FOUNDATION", "boi-name")}
-                    className="flex items-center gap-1 text-dark-yellow hover:text-dark-green font-medium text-xs px-2 py-1 bg-white rounded-lg border border-[#ECE2CB] transition-colors cursor-pointer"
-                  >
-                    {copiedKey === "boi-name" ? <CheckIcon /> : <CopyIcon />}
-                    {copiedKey === "boi-name" ? "Copied" : "Copy"}
-                  </button>
-                </div>
-
-                <div className="flex justify-between items-center bg-beige p-2.5 rounded-xl border border-[#ECE2CB]">
-                  <div>
-                    <span className="text-dark-green/60 block text-[11px]">Account Number</span>
-                    <strong className="text-dark-green font-semibold tracking-wider">666010110001053</strong>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleCopy("666010110001053", "boi-acc")}
-                    className="flex items-center gap-1 text-dark-yellow hover:text-dark-green font-medium text-xs px-2 py-1 bg-white rounded-lg border border-[#ECE2CB] transition-colors cursor-pointer"
-                  >
-                    {copiedKey === "boi-acc" ? <CheckIcon /> : <CopyIcon />}
-                    {copiedKey === "boi-acc" ? "Copied" : "Copy"}
-                  </button>
-                </div>
-
-                <div className="flex justify-between items-center bg-beige p-2.5 rounded-xl border border-[#ECE2CB]">
-                  <div>
-                    <span className="text-dark-green/60 block text-[11px]">IFSC Code</span>
-                    <strong className="text-dark-green font-semibold tracking-wider">BKID0006660</strong>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleCopy("BKID0006660", "boi-ifsc")}
-                    className="flex items-center gap-1 text-dark-yellow hover:text-dark-green font-medium text-xs px-2 py-1 bg-white rounded-lg border border-[#ECE2CB] transition-colors cursor-pointer"
-                  >
-                    {copiedKey === "boi-ifsc" ? <CheckIcon /> : <CopyIcon />}
-                    {copiedKey === "boi-ifsc" ? "Copied" : "Copy"}
-                  </button>
-                </div>
-
-                <div className="text-[12px] text-dark-green/70 pt-1">
-                  <strong>Branch Code / Address:</strong> Near St. Francis Hospital, Martindal Bridge, Ajmer, Rajasthan – 305001
-                </div>
-              </div>
-            </motion.div>
-
             {/* Secondary Account (ICICI Bank) */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -1201,9 +1124,6 @@ const DonationFormSection = () => {
             >
               <div className="flex items-center justify-between mb-4 border-b border-[#F2E7D6] pb-3">
                 <div>
-                  <span className="text-[11px] font-bold text-dark-yellow uppercase tracking-wider">
-                    Secondary Account
-                  </span>
                   <h4 className="font-cormorant font-bold text-xl text-dark-green">
                     ICICI Bank Ltd. — Ajmer
                   </h4>

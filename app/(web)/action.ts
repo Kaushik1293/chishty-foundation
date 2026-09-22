@@ -275,6 +275,8 @@ export async function submitDonationIntent(data: DonationRecord) {
       // Still return success to allow frontend flow to proceed cleanly
     }
 
+    revalidatePath("/asgard/donations");
+    revalidatePath("/asgard/dashboard");
     return { success: true };
   } catch (err: any) {
     console.warn("Error recording donation intent:", err.message);
