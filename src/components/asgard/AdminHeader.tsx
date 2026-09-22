@@ -24,6 +24,7 @@ import {
   RefreshCw,
   BookOpen,
   Image as ImageIcon,
+  HandHeart,
 } from "lucide-react";
 
 interface AdminHeaderProps {
@@ -74,6 +75,11 @@ export default function AdminHeader({ onMobileMenuToggle }: AdminHeaderProps) {
 
   // Dynamic Page Title
   const getPageTitle = () => {
+    if (pathname.includes("/asgard/donations") || pathname.includes("/donations"))
+      return {
+        title: "Donations Management",
+        subtitle: "Track, review, verify, and manage online & offline contributions",
+      };
     if (pathname.includes("/asgard/causes") || pathname.includes("/causes"))
       return {
         title: "Causes & Campaigns",
@@ -191,6 +197,14 @@ export default function AdminHeader({ onMobileMenuToggle }: AdminHeaderProps) {
                     >
                       <LayoutDashboard className="w-4 h-4 text-dark-yellow" />
                       <span>Admin Overview</span>
+                    </Link>
+                    <Link
+                      href="/asgard/donations"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-xs text-dark-green hover:bg-dark-green/5 rounded-xl transition-colors font-medium"
+                    >
+                      <HandHeart className="w-4 h-4 text-dark-yellow" />
+                      <span>Donations Manager</span>
                     </Link>
                     <Link
                       href="/asgard/events"

@@ -8,6 +8,7 @@ export interface SidebarCounts {
   causes: number;
   insights: number;
   media: number;
+  donations: number;
 }
 
 async function getCountForTable(supabase: any, table: string): Promise<number> {
@@ -35,12 +36,13 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
   try {
     const supabase = await createClient();
 
-    const [events, partners, causes, insights, media] = await Promise.all([
+    const [events, partners, causes, insights, media, donationsCount] = await Promise.all([
       getCountForTable(supabase, "events"),
       getCountForTable(supabase, "partners"),
       getCountForTable(supabase, "causes"),
       getCountForTable(supabase, "insights"),
       getCountForTable(supabase, "media"),
+      getCountForTable(supabase, "donations"),
     ]);
 
     return {
@@ -49,6 +51,7 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
       causes,
       insights,
       media,
+      donations: donationsCount ?? 0,
     };
   } catch (error) {
     console.error("Failed to fetch sidebar counts:", error);
@@ -58,6 +61,7 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
       causes: 0,
       insights: 0,
       media: 0,
+      donations: 0,
     };
   }
 }
