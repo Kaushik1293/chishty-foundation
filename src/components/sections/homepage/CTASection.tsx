@@ -130,7 +130,7 @@ const CTASection = () => {
     };
 
     return (
-        <section className="relative overflow-hidden bg-beige">
+        <section id="donate-cta" className="relative overflow-hidden bg-beige scroll-mt-20">
             <div className="container mx-auto px-5 md:px-0">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
                     <div className="pt-20 pb-10 md:pt-28">
@@ -244,7 +244,7 @@ const CTASection = () => {
                                     transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
                                 />
                                 <MagneticLink
-                                    href="/contact"
+                                    href="/donation"
                                     strength={0.15}
                                     style={{ backgroundColor: DARK_GREEN }}
                                     className="group relative flex items-center gap-3 rounded-2xl shadow-xl pl-3 pr-6 py-2.5 overflow-hidden"
