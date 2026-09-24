@@ -65,7 +65,7 @@ const pillars = [
 
 const ServicePillarsSection = () => {
     return (
-        <section className="relative  py-20 md:py-28">
+        <section id="pillars" className="relative py-20 md:py-28 scroll-mt-20">
             <div className="container mx-auto px-5 md:px-0 mb-22">
                 <SectionHeading
                     eyebrow="WHAT WE FOCUS ON"

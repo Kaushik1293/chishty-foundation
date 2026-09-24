@@ -189,7 +189,7 @@ const PartnerRow = ({
 
 const OurPartnersSection: React.FC<IOurPartnersSection> = () => {
     return (
-        <section className="relative overflow-hidden py-20 md:py-28" id="partners">
+        <section className="relative overflow-hidden py-20 md:py-28 scroll-mt-20" id="partners">
             <div className="absolute inset-0 -z-10">
                 <Image src={sectionBg} alt="" fill className="object-cover" />
             </div>

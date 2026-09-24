@@ -125,7 +125,7 @@ const galleryImages: { src: ImgSrc; radius: string }[] = [
 
 const AboutusSection = () => {
     return (
-        <section className="py-20 overflow-hidden relative bg-white">
+        <section id="our-story" className="py-20 overflow-hidden relative bg-white scroll-mt-20">
             <div className="container mx-auto px-5 md:px-0 z-10 relative">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
 
@@ -156,10 +156,13 @@ const AboutusSection = () => {
                             custom={2}
                             className="flex flex-wrap items-center gap-8 mt-12"
                         >
-                            <div className="flex items-center gap-4">
-                                <motion.button
-                                    type="button"
-                                    aria-label="Watch our story"
+                            <a
+                                href="https://www.youtube.com/@SufiMusafir"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-4 group"
+                            >
+                                <motion.div
                                     whileHover={{ scale: 1.08 }}
                                     whileTap={{ scale: 0.95 }}
                                     className="relative flex items-center justify-center w-14 h-14 rounded-full bg-[#D4A017] text-white shadow-lg shadow-[#D4A017]/30"
@@ -176,12 +179,12 @@ const AboutusSection = () => {
                                     >
                                         <path d="M2 1.5L16 9L2 16.5V1.5Z" fill="currentColor" />
                                     </svg>
-                                </motion.button>
+                                </motion.div>
                                 <div>
-                                    <p className="font-semibold text-dark-green leading-tight">Watch Our Story</p>
-                                    <p className="text-sm text-gray-500">02:35 Min</p>
+                                    <p className="font-semibold text-dark-green leading-tight group-hover:text-dark-yellow transition-colors">Watch Our Story</p>
+                                    <p className="text-sm text-gray-500">YouTube Channel</p>
                                 </div>
-                            </div>
+                            </a>
 
                             <div className="flex items-center gap-4">
                                 <motion.div
