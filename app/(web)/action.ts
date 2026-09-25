@@ -559,12 +559,14 @@ export async function submitDonationIntent(data: any) {
 }
 
 // -------------------------------------------------------------
-// SOCIAL MEDIA FEEDS (INSTAGRAM & X) - SAFE FALLBACKS
+// SOCIAL MEDIA FEEDS (INSTAGRAM & X)
 // -------------------------------------------------------------
-export async function getInstagramPosts() {
-  return [];
-}
+// export async function getInstagramPosts() {
+//   const { getLatestInstagramPosts } = await import('@/src/services/social/socialMediaService');
+//   return getLatestInstagramPosts();
+// }
 
-export async function getXPosts() {
-  return [];
-}
+// export async function getXPosts() {
+//   const { getLatestXPosts } = await import('@/src/services/social/socialMediaService');
+//   return getLatestXPosts();
+// }
