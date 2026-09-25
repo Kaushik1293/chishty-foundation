@@ -18,8 +18,8 @@ export default function AdminLoginPage() {
   const supabase = createClient();
 
   const [mode, setMode] = useState<AuthMode>("login");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("vikas.yadav@ascendtis.com");
+  const [password, setPassword] = useState("123456");
 
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
