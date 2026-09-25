@@ -142,7 +142,7 @@ interface DonationFormData {
   paymentMethod: PaymentMethod;
 }
 
-const DEFAULT_UPI_ID = "chishtyfoundation@boi";
+const DEFAULT_UPI_ID = "mschishtyfoundation.easypay1@icici";
 
 const DonationFormSection = () => {
   const { openCheckout } = useRazorpayCheckout();
@@ -311,49 +311,59 @@ const DonationFormSection = () => {
     setErrorMessage("");
 
     try {
-      let paymentId: string | undefined;
-      let orderId: string | undefined;
-      let signature: string | undefined;
+      const fullPhone = `${selectedCountry.dialCode} ${formData.phone}`.trim();
+      const donorLocation = [
+        formData.address.trim(),
+        formData.city.trim(),
+        formData.country.trim() || selectedCountry.name,
+        formData.pan.trim() ? `PAN: ${formData.pan.trim().toUpperCase()}` : "",
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+      const {
+        initiateOnlineDonation,
+        verifyAndCompleteDonation,
+        markDonationStatus,
+        recordOfflineDonation,
+      } = await import("@/app/(web)/action");
 
       // Online payment via Razorpay
       if (formData.paymentMethod === "Debit/Credit Card" || formData.paymentMethod === "UPI") {
-        const razorpayKey = (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_SfjnPRW22bJnBT").trim();
+        // 1. INITIATE: Create Razorpay Order & Insert ONE pending Supabase row
+        const initRes = await initiateOnlineDonation({
+          donor_name: formData.fullName.trim(),
+          donor_email: formData.email.trim(),
+          donor_phone: fullPhone,
+          pan: formData.pan.trim().toUpperCase() || undefined,
+          amount: parseFloat(formData.amount),
+          currency: "INR",
+          donation_type: formData.category,
+          message: donorLocation || undefined,
+          is_anonymous: false,
+          payment_method: formData.paymentMethod,
+        });
 
-        let serverOrderId: string | undefined;
-        let amountInPaise = Math.round(parseFloat(formData.amount) * 100);
-        let currency = "INR";
-
-        // Attempt server-side Razorpay order creation if configured
-        try {
-          const { createRazorpayOrder } = await import("@/app/(web)/action");
-          const orderRes = await createRazorpayOrder({
-            amount: parseFloat(formData.amount),
-            notes: {
-              category: formData.category,
-              donor_name: formData.fullName.trim(),
-              donor_email: formData.email.trim(),
-              ...(formData.pan.trim() ? { donor_pan: formData.pan.trim().toUpperCase() } : {}),
-            },
-          });
-
-          if (orderRes?.success && orderRes.order?.id) {
-            serverOrderId = orderRes.order.id;
-            amountInPaise = orderRes.order.amount || amountInPaise;
-            currency = orderRes.order.currency || currency;
-          }
-        } catch (serverErr) {
-          console.warn("Continuing with standard checkout:", serverErr);
+        if (!initRes.success || !initRes.donation_id) {
+          throw new Error(initRes.error || "Failed to initialize donation record");
         }
 
-        // 2. Open Razorpay Checkout modal
+        const donationId = initRes.donation_id;
+        const serverOrderId = initRes.order_id;
+        const amountInPaise = initRes.amount_paise || Math.round(parseFloat(formData.amount) * 100);
+        const razorpayKey = initRes.key_id || (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_live_Teib5d3ArzpPCt").trim();
+
+        // 2. OPEN CHECKOUT: Open Razorpay Popup
+        let paymentId: string | undefined;
+        let orderId: string | undefined;
+        let signature: string | undefined;
+
         try {
           const rawDigits = formData.phone.replace(/\D/g, "");
           const formattedDialPhone = `${selectedCountry.dialCode}${rawDigits}`;
 
           const checkoutOptions: any = {
             key: razorpayKey,
-            amount: amountInPaise,
-            currency: currency,
             name: "Chishty Foundation",
             description: `Donation for ${formData.category}`,
             prefill: {
@@ -361,11 +371,19 @@ const DonationFormSection = () => {
               email: formData.email.trim(),
               contact: formattedDialPhone,
             },
+            notes: {
+              category: formData.category,
+              donor_name: formData.fullName.trim(),
+              ...(formData.pan.trim() ? { donor_pan: formData.pan.trim().toUpperCase() } : {}),
+            },
             theme: { color: "#BD8C3B" },
           };
 
           if (serverOrderId) {
             checkoutOptions.order_id = serverOrderId;
+          } else {
+            checkoutOptions.amount = amountInPaise;
+            checkoutOptions.currency = "INR";
           }
 
           const response = await openCheckout(checkoutOptions);
@@ -373,58 +391,74 @@ const DonationFormSection = () => {
           paymentId = response.razorpay_payment_id;
           orderId = response.razorpay_order_id || serverOrderId;
           signature = response.razorpay_signature;
-
-          // 3. Verify Payment signature on backend if applicable
-          if (signature && orderId) {
-            try {
-              const { verifyRazorpayPayment } = await import("@/app/(web)/action");
-              await verifyRazorpayPayment({
-                razorpay_order_id: orderId,
-                razorpay_payment_id: paymentId,
-                razorpay_signature: signature,
-              });
-            } catch (verifyErr) {
-              console.warn("Signature verification warning:", verifyErr);
-            }
-          }
-
-          setPaymentDetails({ paymentId, orderId });
         } catch (checkoutErr: any) {
           const msg = String(checkoutErr?.message || "").toLowerCase();
           if (msg.includes("cancel") || msg.includes("dismiss")) {
+            // User closed/cancelled checkout -> Update SAME row to 'cancelled'
+            await markDonationStatus({
+              donation_id: donationId,
+              order_id: serverOrderId,
+              status: "cancelled",
+            });
             setIsSubmitting(false);
-            return; // User cancelled modal
+            return;
           }
+          // Payment failed
+          await markDonationStatus({
+            donation_id: donationId,
+            order_id: serverOrderId,
+            status: "failed",
+          });
           console.error("Razorpay checkout error:", checkoutErr);
           throw new Error("Unable to complete payment transaction.");
         }
+
+        // 3. VERIFY & UPDATE: Server-side signature verification & update SAME row to 'success'
+        if (signature && orderId && paymentId) {
+          const verifyRes = await verifyAndCompleteDonation({
+            donation_id: donationId,
+            razorpay_order_id: orderId,
+            razorpay_payment_id: paymentId,
+            razorpay_signature: signature,
+            payment_method: formData.paymentMethod,
+          });
+
+          if (!verifyRes.success) {
+            throw new Error(verifyRes.error || "Payment signature verification failed");
+          }
+
+          setPaymentDetails({ paymentId, orderId });
+          setSubmissionStatus("success");
+        } else {
+          throw new Error("Incomplete payment response received.");
+        }
+      } else {
+        // Offline / Bank transfer submission
+        const offlineRes = await recordOfflineDonation({
+          donor_name: formData.fullName.trim(),
+          donor_email: formData.email.trim(),
+          donor_phone: fullPhone,
+          pan: formData.pan.trim().toUpperCase() || undefined,
+          amount: parseFloat(formData.amount),
+          currency: "INR",
+          donation_type: formData.category,
+          message: donorLocation || undefined,
+          is_anonymous: false,
+          payment_method: formData.paymentMethod,
+          payment_status: "success",
+        });
+
+        if (!offlineRes.success) {
+          throw new Error(offlineRes.error || "Failed to record donation");
+        }
+
+        setSubmissionStatus("success");
       }
-
-      // 4. Record donation in database
-      const fullPhone = `${selectedCountry.dialCode} ${formData.phone}`.trim();
-      const { submitDonationIntent } = await import("@/app/(web)/action");
-      await submitDonationIntent({
-        category: formData.category,
-        amount: parseFloat(formData.amount),
-        full_name: formData.fullName.trim(),
-        email: formData.email.trim(),
-        phone: fullPhone,
-        pan: formData.pan.trim().toUpperCase() || undefined,
-        address: formData.address.trim() || undefined,
-        city: formData.city.trim() || undefined,
-        country: formData.country.trim() || selectedCountry.name,
-        payment_method: formData.paymentMethod,
-        payment_id: paymentId,
-        razorpay_order_id: orderId,
-        razorpay_signature: signature,
-        status: paymentId ? "completed" : "pending",
-      });
-
-      setSubmissionStatus("success");
     } catch (err: any) {
       console.error("Donation submission error:", err);
       setSubmissionStatus("error");
       setErrorMessage(
+        err?.message ||
         "We were unable to process your payment online at this moment. You may try again or contribute directly using our official bank details below."
       );
     } finally {
@@ -911,7 +945,7 @@ const DonationFormSection = () => {
                       </label>
                       <input
                         type="text"
-                        placeholder="e.g. Haji Syed Salman"
+                        placeholder="e.g. John Doe"
                         value={formData.fullName}
                         onChange={handleInputChange("fullName")}
                         className={`${inputBaseClasses} ${errors.fullName ? "border-red-400" : "border-transparent"}`}
@@ -960,9 +994,8 @@ const DonationFormSection = () => {
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="2.5"
-                            className={`transition-transform duration-200 text-dark-green/60 ${
-                              isCountryDropdownOpen ? "rotate-180" : ""
-                            }`}
+                            className={`transition-transform duration-200 text-dark-green/60 ${isCountryDropdownOpen ? "rotate-180" : ""
+                              }`}
                           >
                             <polyline points="6 9 12 15 18 9" />
                           </svg>
@@ -976,9 +1009,8 @@ const DonationFormSection = () => {
                           placeholder={selectedCountry.placeholder}
                           value={formData.phone}
                           onChange={handlePhoneChange}
-                          className={`${inputBaseClasses} rounded-l-none pl-3 ${
-                            errors.phone ? "border-red-400" : "border-transparent"
-                          }`}
+                          className={`${inputBaseClasses} rounded-l-none pl-3 ${errors.phone ? "border-red-400" : "border-transparent"
+                            }`}
                         />
 
                         {/* Searchable Country Dropdown Modal */}
@@ -1003,11 +1035,10 @@ const DonationFormSection = () => {
                                   key={country.code}
                                   type="button"
                                   onClick={() => handleSelectCountry(country)}
-                                  className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg transition-colors text-left cursor-pointer ${
-                                    selectedCountry.code === country.code
-                                      ? "bg-dark-yellow/15 text-dark-green font-bold"
-                                      : "hover:bg-[#FAF6EE] text-dark-green"
-                                  }`}
+                                  className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg transition-colors text-left cursor-pointer ${selectedCountry.code === country.code
+                                    ? "bg-dark-yellow/15 text-dark-green font-bold"
+                                    : "hover:bg-[#FAF6EE] text-dark-green"
+                                    }`}
                                 >
                                   <span className="flex items-center gap-2.5 truncate">
                                     <CountryFlag code={country.code} name={country.name} className="w-5 h-3.5" />
@@ -1115,7 +1146,7 @@ const DonationFormSection = () => {
                       {isSubmitting ? (
                         <>
                           <SpinnerIcon />
-                          <span>Processing...</span>
+                          <span>Creating payment...</span>
                         </>
                       ) : (
                         <>
@@ -1185,80 +1216,6 @@ const DonationFormSection = () => {
               </div>
             </motion.div>
 
-            {/* Primary Account (BOI) */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, ease: EASE, delay: 0.1 }}
-              className="bg-white rounded-3xl p-6 border border-[#F1E3D7] shadow-sm relative overflow-hidden"
-            >
-              <div className="flex items-center justify-between mb-4 border-b border-[#F2E7D6] pb-3">
-                <div>
-                  <span className="text-[11px] font-bold text-dark-yellow uppercase tracking-wider">
-                    Primary Account
-                  </span>
-                  <h4 className="font-cormorant font-bold text-xl text-dark-green">
-                    Bank of India (BOI) — Ajmer Branch
-                  </h4>
-                </div>
-                <span className="px-2.5 py-1 rounded-full bg-dark-green/10 text-dark-green text-[11px] font-bold">
-                  Official
-                </span>
-              </div>
-
-              <div className="space-y-3 text-xs sm:text-sm">
-                <div className="flex justify-between items-center bg-beige p-2.5 rounded-xl border border-[#ECE2CB]">
-                  <div>
-                    <span className="text-dark-green/60 block text-[11px]">Account Name</span>
-                    <strong className="text-dark-green font-semibold">CHISHTY FOUNDATION</strong>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleCopy("CHISHTY FOUNDATION", "boi-name")}
-                    className="flex items-center gap-1 text-dark-yellow hover:text-dark-green font-medium text-xs px-2 py-1 bg-white rounded-lg border border-[#ECE2CB] transition-colors cursor-pointer"
-                  >
-                    {copiedKey === "boi-name" ? <CheckIcon /> : <CopyIcon />}
-                    {copiedKey === "boi-name" ? "Copied" : "Copy"}
-                  </button>
-                </div>
-
-                <div className="flex justify-between items-center bg-beige p-2.5 rounded-xl border border-[#ECE2CB]">
-                  <div>
-                    <span className="text-dark-green/60 block text-[11px]">Account Number</span>
-                    <strong className="text-dark-green font-semibold tracking-wider">666010110001053</strong>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleCopy("666010110001053", "boi-acc")}
-                    className="flex items-center gap-1 text-dark-yellow hover:text-dark-green font-medium text-xs px-2 py-1 bg-white rounded-lg border border-[#ECE2CB] transition-colors cursor-pointer"
-                  >
-                    {copiedKey === "boi-acc" ? <CheckIcon /> : <CopyIcon />}
-                    {copiedKey === "boi-acc" ? "Copied" : "Copy"}
-                  </button>
-                </div>
-
-                <div className="flex justify-between items-center bg-beige p-2.5 rounded-xl border border-[#ECE2CB]">
-                  <div>
-                    <span className="text-dark-green/60 block text-[11px]">IFSC Code</span>
-                    <strong className="text-dark-green font-semibold tracking-wider">BKID0006660</strong>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleCopy("BKID0006660", "boi-ifsc")}
-                    className="flex items-center gap-1 text-dark-yellow hover:text-dark-green font-medium text-xs px-2 py-1 bg-white rounded-lg border border-[#ECE2CB] transition-colors cursor-pointer"
-                  >
-                    {copiedKey === "boi-ifsc" ? <CheckIcon /> : <CopyIcon />}
-                    {copiedKey === "boi-ifsc" ? "Copied" : "Copy"}
-                  </button>
-                </div>
-
-                <div className="text-[12px] text-dark-green/70 pt-1">
-                  <strong>Branch Code / Address:</strong> Near St. Francis Hospital, Martindal Bridge, Ajmer, Rajasthan – 305001
-                </div>
-              </div>
-            </motion.div>
-
             {/* Secondary Account (ICICI Bank) */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -1269,9 +1226,6 @@ const DonationFormSection = () => {
             >
               <div className="flex items-center justify-between mb-4 border-b border-[#F2E7D6] pb-3">
                 <div>
-                  <span className="text-[11px] font-bold text-dark-yellow uppercase tracking-wider">
-                    Secondary Account
-                  </span>
                   <h4 className="font-cormorant font-bold text-xl text-dark-green">
                     ICICI Bank Ltd. — Ajmer
                   </h4>

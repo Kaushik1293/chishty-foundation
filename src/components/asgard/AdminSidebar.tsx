@@ -19,7 +19,8 @@ import {
   ExternalLink,
   ShieldCheck,
   BookOpen,
-  Image as ImageIcon
+  Image as ImageIcon,
+  HandHeart
 } from "lucide-react";
 
 import whiteLogo from "../../assets/images/homepage/white-logo.png";
@@ -55,6 +56,7 @@ export default function AdminSidebar({
   const [causesCount, setCausesCount] = useState<number>(0);
   const [insightsCount, setInsightsCount] = useState<number>(0);
   const [mediaCount, setMediaCount] = useState<number>(0);
+  const [donationsCount, setDonationsCount] = useState<number>(0);
 
   const supabase = createClient();
 
@@ -73,6 +75,7 @@ export default function AdminSidebar({
         setCausesCount(counts.causes);
         setInsightsCount(counts.insights);
         setMediaCount(counts.media);
+        setDonationsCount(counts.donations);
       } catch (err) {
         console.error("Error refreshing sidebar counts:", err);
       }
@@ -86,6 +89,12 @@ export default function AdminSidebar({
       href: "/asgard/dashboard",
       icon: LayoutDashboard,
       badge: null,
+    },
+    {
+      label: "Donations",
+      href: "/asgard/donations",
+      icon: HandHeart,
+      badge: donationsCount.toString(),
     },
     {
       label: "Events",

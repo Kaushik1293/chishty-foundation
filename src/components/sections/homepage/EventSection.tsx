@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import { motion, type Variants } from 'framer-motion'
 import greenDivider from '../../../assets/images/homepage/vectors/common/green-divider.png'
 import star from '../../../assets/images/homepage/vectors/common/faded-star.svg'
@@ -40,7 +41,7 @@ const EventSection: React.FC<IEventSection> = ({ events }) => {
   const displayEvents = events && events.length > 0 ? events : defaultEvents;
 
   return (
-    <section className="relative pb-25 bg-white overflow-hidden">
+    <section id="events" className="relative pb-25 bg-white overflow-hidden scroll-mt-20">
 
       <motion.img
         src={greenDivider.src}
@@ -122,9 +123,11 @@ const EventSection: React.FC<IEventSection> = ({ events }) => {
               transition={{ duration: 5, ease: 'easeInOut', repeat: Infinity }}
               className="hidden md:block w-40 h-auto origin-top select-none "
             />
-            <motion.div className='self-baseline' whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-              <PrimaryButton text="Explore All Events" icon={<ArrowIcon />} />
-            </motion.div>
+            <Link href="/get-involved" className='self-baseline'>
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+                <PrimaryButton text="Explore All Events" icon={<ArrowIcon />} />
+              </motion.div>
+            </Link>
           </motion.div>
         </div>
 
@@ -186,9 +189,8 @@ const EventSection: React.FC<IEventSection> = ({ events }) => {
                   {event.short_description}
                 </p>
 
-                <a
-                  // href={`/events/${event.slug}`}
-                  href='#'
+                <Link
+                  href="/get-involved"
                   className="group inline-flex items-center gap-3 text-sm font-semibold text-dark-yellow transition-all duration-300 hover:gap-4"
                 >
                   <span>Learn More</span>
@@ -207,7 +209,7 @@ const EventSection: React.FC<IEventSection> = ({ events }) => {
                     </svg>
 
                   </motion.span>
-                </a>
+                </Link>
               </div>
             </motion.div>
           ))}

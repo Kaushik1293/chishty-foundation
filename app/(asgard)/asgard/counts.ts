@@ -1,6 +1,14 @@
 "use server";
 
 import { createClient } from "@/src/utils/supabase/server";
+import { createClient as createDirectClient } from "@supabase/supabase-js";
+
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  "https://liefgpgxctgnntokernd.supabase.co";
+const supabaseKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+  "sb_publishable_VgNPF1O9ksecEUlos4oHUw_XvMig14_";
 
 export interface SidebarCounts {
   events: number;
@@ -8,6 +16,7 @@ export interface SidebarCounts {
   causes: number;
   insights: number;
   media: number;
+  donations: number;
 }
 
 async function getCountForTable(supabase: any, table: string): Promise<number> {
@@ -18,13 +27,24 @@ async function getCountForTable(supabase: any, table: string): Promise<number> {
 
     if (error || count === null || count === undefined) {
       const { data } = await supabase.from(table).select("id");
-      return data?.length ?? 0;
+      if (data && data.length > 0) return data.length;
+
+      // Fallback with direct client
+      const direct = createDirectClient(supabaseUrl, supabaseKey);
+      const directRes = await direct.from(table).select("id");
+      return directRes.data?.length ?? 0;
     }
 
     return count;
   } catch (err) {
     console.error(`Error counting table ${table}:`, err);
-    return 0;
+    try {
+      const direct = createDirectClient(supabaseUrl, supabaseKey);
+      const directRes = await direct.from(table).select("id");
+      return directRes.data?.length ?? 0;
+    } catch {
+      return 0;
+    }
   }
 }
 
@@ -33,14 +53,20 @@ async function getCountForTable(supabase: any, table: string): Promise<number> {
  */
 export async function getSidebarCounts(): Promise<SidebarCounts> {
   try {
-    const supabase = await createClient();
+    let supabase: any;
+    try {
+      supabase = await createClient();
+    } catch {
+      supabase = createDirectClient(supabaseUrl, supabaseKey);
+    }
 
-    const [events, partners, causes, insights, media] = await Promise.all([
+    const [events, partners, causes, insights, media, donationsCount] = await Promise.all([
       getCountForTable(supabase, "events"),
       getCountForTable(supabase, "partners"),
       getCountForTable(supabase, "causes"),
       getCountForTable(supabase, "insights"),
       getCountForTable(supabase, "media"),
+      getCountForTable(supabase, "donations"),
     ]);
 
     return {
@@ -49,6 +75,7 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
       causes,
       insights,
       media,
+      donations: donationsCount ?? 0,
     };
   } catch (error) {
     console.error("Failed to fetch sidebar counts:", error);
@@ -58,6 +85,7 @@ export async function getSidebarCounts(): Promise<SidebarCounts> {
       causes: 0,
       insights: 0,
       media: 0,
+      donations: 0,
     };
   }
 }

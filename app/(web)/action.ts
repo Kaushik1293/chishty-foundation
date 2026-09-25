@@ -245,141 +245,330 @@ export async function deleteEvent(id: number) {
 // DONATIONS (SUPABASE INTEGRATION)
 // -------------------------------------------------------------
 export interface DonationRecord {
-  category: string;
+  id?: string;
+  donor_name: string;
+  donor_email: string;
+  donor_phone: string;
+  pan?: string | null;
   amount: number;
-  full_name: string;
-  email: string;
-  phone: string;
-  pan?: string;
-  address?: string;
-  city?: string;
-  country?: string;
+  currency?: string;
+  donation_type: string;
+  message?: string | null;
+  is_anonymous?: boolean;
+  payment_status: "success" | "pending" | "failed" | "cancelled" | "refunded" | string;
   payment_method: string;
-  payment_id?: string;
-  razorpay_order_id?: string;
-  razorpay_signature?: string;
-  status?: string;
-}
-
-export async function submitDonationIntent(data: DonationRecord) {
-  try {
-    const payload = {
-      ...data,
-      status: data.status || (data.payment_id ? "completed" : "pending"),
-      created_at: new Date().toISOString(),
-    };
-
-    const { error } = await supabase.from("donations").insert([payload]);
-
-    if (error) {
-      console.warn("Could not record donation in Supabase (table may not exist yet):", error.message);
-      // Still return success to allow frontend flow to proceed cleanly
-    }
-
-    return { success: true };
-  } catch (err: any) {
-    console.warn("Error recording donation intent:", err.message);
-    return { success: true };
-  }
+  transaction_id?: string | null;
+  order_id?: string | null;
+  admin_notes?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 /**
- * Server action to create a Razorpay Order via Orders API
+ * 1. INITIATE ONLINE DONATION:
+ * Creates Razorpay order (amount in paise) and inserts ONE row with payment_status = 'pending' and order_id
  */
-export async function createRazorpayOrder(params: {
+export async function initiateOnlineDonation(data: {
+  donor_name: string;
+  donor_email: string;
+  donor_phone: string;
+  pan?: string | null;
   amount: number;
   currency?: string;
-  receipt?: string;
-  notes?: Record<string, string>;
+  donation_type: string;
+  message?: string | null;
+  is_anonymous?: boolean;
+  payment_method?: string;
 }) {
-  const keyId = (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID || "").trim();
-  const keySecret = (process.env.RAZORPAY_KEY_SECRET || "").trim();
-
-  if (!keyId || !keySecret || keyId === "your_razorpay_key_id" || keySecret === "your_razorpay_key_secret") {
-    return {
-      success: false,
-      fallbackToDirect: Boolean(keyId && keyId !== "your_razorpay_key_id"),
-      error: "Razorpay server secret not configured.",
-    };
-  }
-
-  const numAmount = Number(params.amount);
+  const numAmount = Number(data.amount);
   if (isNaN(numAmount) || numAmount <= 0) {
-    return { success: false, error: "Invalid donation amount: must be greater than zero." };
+    return { success: false, error: "Donation amount must be greater than zero." };
   }
 
-  const amountInPaise = Math.round(numAmount * 100);
-  const currency = (params.currency || "INR").toUpperCase();
+  if (!data.donor_name?.trim() || !data.donor_email?.trim() || !data.donor_phone?.trim()) {
+    return { success: false, error: "Please fill in all required donor contact fields." };
+  }
 
   try {
-    const auth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
-    const res = await fetch("https://api.razorpay.com/v1/orders", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Basic ${auth}`,
-      },
-      body: JSON.stringify({
-        amount: amountInPaise,
-        currency,
-        receipt: params.receipt || `rcpt_${Date.now()}`,
-        notes: params.notes || {},
-      }),
-    });
+    let serverOrderId: string | undefined;
+    let keyId: string = (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_live_Teib5d3ArzpPCt").trim();
+    let amountInPaise = Math.round(numAmount * 100);
+    const currency = (data.currency || "INR").toUpperCase();
 
-    const data = await res.json();
-    if (!res.ok) {
-      const errMsg =
-        res.status === 401
-          ? "Razorpay authentication failed: Invalid Key ID or Key Secret."
-          : data.error?.description || "Failed to create Razorpay order";
-      return { success: false, error: errMsg };
+    // Step A: Create Razorpay Order via Supabase Edge Function
+    try {
+      const { data: orderData, error: orderError } = await supabase.functions.invoke("razorpay-create-order", {
+        body: {
+          amount: numAmount,
+          currency: currency,
+          receipt: `rcpt_${Date.now()}`,
+          notes: {
+            donation_type: data.donation_type,
+            donor_name: data.donor_name.trim(),
+            donor_email: data.donor_email.trim(),
+            ...(data.pan ? { donor_pan: data.pan } : {}),
+          },
+        },
+      });
+
+      if (orderError) {
+        console.warn("Supabase razorpay-create-order error:", orderError);
+      } else if (orderData?.success && orderData.order?.id) {
+        serverOrderId = orderData.order.id;
+        amountInPaise = orderData.order.amount || amountInPaise;
+        if (orderData.key_id) {
+          keyId = orderData.key_id;
+        }
+      }
+    } catch (edgeErr) {
+      console.warn("Notice during Razorpay order generation:", edgeErr);
     }
+
+    // Step B: Create the SINGLE Pending Record in Supabase
+    const payload = {
+      donor_name: data.donor_name.trim(),
+      donor_email: data.donor_email.trim(),
+      donor_phone: data.donor_phone.trim(),
+      amount: numAmount,
+      currency: currency,
+      donation_type: data.donation_type || "Education",
+      message: data.message || null,
+      is_anonymous: Boolean(data.is_anonymous),
+      payment_status: "pending",
+      payment_method: data.payment_method || "Online",
+      transaction_id: null,
+      order_id: serverOrderId || null,
+      admin_notes: data.pan ? `PAN: ${data.pan}` : null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data: inserted, error: insertError } = await supabase
+      .from("donations")
+      .insert([payload])
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error("Could not insert pending donation into Supabase:", insertError);
+      return { success: false, error: insertError.message };
+    }
+
+    revalidatePath("/asgard/donations");
+    revalidatePath("/asgard/dashboard");
 
     return {
       success: true,
-      order: {
-        id: data.id as string,
-        amount: data.amount as number,
-        currency: data.currency as string,
-      },
+      donation_id: inserted.id as string,
+      order_id: serverOrderId,
+      key_id: keyId,
+      amount_paise: amountInPaise,
+      currency: currency,
+      donation: inserted as DonationRecord,
     };
   } catch (err: any) {
-    return { success: false, error: err.message || "Failed to connect to Razorpay Orders API" };
+    console.error("Error in initiateOnlineDonation:", err);
+    return { success: false, error: err.message || "Failed to initialize payment process" };
   }
 }
 
 /**
- * Server action to securely verify Razorpay payment signature
+ * 2. VERIFY AND COMPLETE DONATION:
+ * Verifies Razorpay payment signature server-side and UPDATES THE SAME ROW to payment_status = 'success'
  */
-export async function verifyRazorpayPayment(params: {
+export async function verifyAndCompleteDonation(params: {
   razorpay_order_id: string;
   razorpay_payment_id: string;
   razorpay_signature: string;
+  donation_id?: string;
+  payment_method?: string;
 }) {
-  const keySecret = (process.env.RAZORPAY_KEY_SECRET || "").trim();
-  if (!keySecret) {
-    return { success: false, error: "RAZORPAY_KEY_SECRET is not configured on server" };
-  }
-
   if (!params.razorpay_order_id || !params.razorpay_payment_id || !params.razorpay_signature) {
-    return { success: false, error: "Incomplete payment verification parameters" };
+    return { success: false, error: "Incomplete payment verification parameters received." };
   }
 
   try {
-    const crypto = await import("crypto");
-    const body = `${params.razorpay_order_id}|${params.razorpay_payment_id}`;
-    const expectedSignature = crypto
-      .createHmac("sha256", keySecret)
-      .update(body)
-      .digest("hex");
+    // Step A: Verify signature via Supabase Edge Function
+    const { data: verifyData, error: verifyError } = await supabase.functions.invoke("razorpay-verify-payment", {
+      body: {
+        razorpay_order_id: params.razorpay_order_id,
+        razorpay_payment_id: params.razorpay_payment_id,
+        razorpay_signature: params.razorpay_signature,
+      },
+    });
 
-    if (expectedSignature === params.razorpay_signature) {
-      return { success: true };
-    } else {
-      return { success: false, error: "Payment verification failed: Signature mismatch" };
+    if (verifyError) {
+      console.error("Supabase razorpay-verify-payment error:", verifyError);
+      await markDonationStatus({
+        order_id: params.razorpay_order_id,
+        donation_id: params.donation_id,
+        status: "failed",
+      });
+      return { success: false, error: verifyError.message || "Signature verification failed" };
     }
+
+    const isVerified = verifyData && (verifyData.verified || verifyData.success);
+    if (!isVerified) {
+      await markDonationStatus({
+        order_id: params.razorpay_order_id,
+        donation_id: params.donation_id,
+        status: "failed",
+      });
+      return { success: false, error: verifyData?.error || "Payment signature verification failed" };
+    }
+
+    // Step B: UPDATE THE SAME ROW in Supabase to 'success'
+    let query = supabase.from("donations").update({
+      payment_status: "success",
+      transaction_id: params.razorpay_payment_id,
+      payment_method: params.payment_method || "Online",
+      updated_at: new Date().toISOString(),
+    });
+
+    if (params.donation_id) {
+      query = query.eq("id", params.donation_id);
+    } else {
+      query = query.eq("order_id", params.razorpay_order_id);
+    }
+
+    const { data: updatedRecord, error: updateError } = await query.select().single();
+
+    if (updateError) {
+      console.warn("Could not update donation to success:", updateError.message);
+      return { success: false, error: updateError.message };
+    }
+
+    revalidatePath("/asgard/donations");
+    revalidatePath("/asgard/dashboard");
+
+    return {
+      success: true,
+      donation: updatedRecord as DonationRecord,
+    };
   } catch (err: any) {
-    return { success: false, error: err.message || "Error verifying payment signature" };
+    console.error("Error in verifyAndCompleteDonation:", err);
+    return { success: false, error: err.message || "Error during payment verification" };
   }
+}
+
+/**
+ * 3. MARK DONATION STATUS:
+ * Updates the same row when checkout is cancelled or payment fails
+ */
+export async function markDonationStatus(params: {
+  order_id?: string;
+  donation_id?: string;
+  status: "cancelled" | "failed" | "pending" | "success";
+}) {
+  try {
+    let query = supabase.from("donations").update({
+      payment_status: params.status,
+      updated_at: new Date().toISOString(),
+    });
+
+    if (params.donation_id) {
+      query = query.eq("id", params.donation_id);
+    } else if (params.order_id) {
+      query = query.eq("order_id", params.order_id);
+    } else {
+      return { success: false, error: "Missing identifier" };
+    }
+
+    const { data, error } = await query.select().single();
+
+    if (error) {
+      console.warn("Could not update donation status:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    revalidatePath("/asgard/donations");
+    revalidatePath("/asgard/dashboard");
+    return { success: true, data };
+  } catch (err: any) {
+    console.error("Error updating donation status:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Offline / Cash direct recording
+ */
+export async function recordOfflineDonation(data: {
+  donor_name: string;
+  donor_email: string;
+  donor_phone: string;
+  pan?: string | null;
+  amount: number;
+  currency?: string;
+  donation_type: string;
+  message?: string | null;
+  is_anonymous?: boolean;
+  payment_method?: string;
+  payment_status?: string;
+  admin_notes?: string | null;
+}) {
+  try {
+    const payload = {
+      donor_name: data.donor_name.trim(),
+      donor_email: data.donor_email.trim(),
+      donor_phone: data.donor_phone.trim(),
+      amount: Number(data.amount),
+      currency: data.currency || "INR",
+      donation_type: data.donation_type || "Education",
+      message: data.message || null,
+      is_anonymous: Boolean(data.is_anonymous),
+      payment_status: data.payment_status || "success",
+      payment_method: data.payment_method || "Offline / Cash",
+      transaction_id: `OFFLINE_${Date.now()}`,
+      order_id: null,
+      admin_notes: data.admin_notes || (data.pan ? `PAN: ${data.pan}` : null),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data: inserted, error } = await supabase.from("donations").insert([payload]).select().single();
+
+    if (error) {
+      console.warn("Could not record offline donation in Supabase:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    revalidatePath("/asgard/donations");
+    revalidatePath("/asgard/dashboard");
+    return { success: true, data: inserted as DonationRecord };
+  } catch (err: any) {
+    console.error("Error recording offline donation:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+// -------------------------------------------------------------
+// LEGACY / COMPATIBILITY EXPORTS
+// -------------------------------------------------------------
+export async function submitDonationIntent(data: any) {
+  return recordOfflineDonation({
+    donor_name: data.full_name || data.donor_name || "",
+    donor_email: data.email || data.donor_email || "",
+    donor_phone: data.phone || data.donor_phone || "",
+    pan: data.pan,
+    amount: data.amount,
+    currency: "INR",
+    donation_type: data.category || data.donation_type || "General",
+    message: [data.address, data.city, data.country].filter(Boolean).join(", "),
+    payment_method: data.payment_method || "Direct",
+    payment_status: data.status || "completed",
+  });
+}
+
+// -------------------------------------------------------------
+// SOCIAL MEDIA FEEDS (INSTAGRAM & X)
+// -------------------------------------------------------------
+export async function getInstagramPosts() {
+  const { getLatestInstagramPosts } = await import('@/src/services/social/socialMediaService');
+  return getLatestInstagramPosts();
+}
+
+export async function getXPosts() {
+  const { getLatestXPosts } = await import('@/src/services/social/socialMediaService');
+  return getLatestXPosts();
 }

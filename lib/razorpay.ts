@@ -81,8 +81,17 @@ export function useRazorpayCheckout() {
         };
 
         // Remove order_id if not present or empty to avoid Razorpay SDK invalid order parameter error
-        if (!cleanOptions.order_id || cleanOptions.order_id.trim() === "") {
+        if (!cleanOptions.order_id || String(cleanOptions.order_id).trim() === "") {
           delete cleanOptions.order_id;
+        }
+
+        // Clean any undefined keys from prefill or notes
+        if (cleanOptions.prefill) {
+          Object.keys(cleanOptions.prefill).forEach((key) => {
+            if (!cleanOptions.prefill[key]) {
+              delete cleanOptions.prefill[key];
+            }
+          });
         }
 
         const rzp = new RazorpayConstructor(cleanOptions as RazorpayOrderOptions);

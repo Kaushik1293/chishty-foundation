@@ -130,7 +130,7 @@ const CTASection = () => {
     };
 
     return (
-        <section className="relative overflow-hidden bg-beige">
+        <section id="donate-cta" className="relative overflow-hidden bg-beige scroll-mt-20">
             <div className="container mx-auto px-5 md:px-0">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
                     <div className="pt-20 pb-10 md:pt-28">

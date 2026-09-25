@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import { motion, type Variants } from 'framer-motion'
 import SectionHeading from '../../common/SectionHeading'
 import characterImage from '../../../assets/images/homepage/whatwedosection/what-we-do-img.png'
@@ -39,7 +40,7 @@ const featureCards = [
 
 const WhatWeDoSection = () => {
     return (
-        <section className="relative bg-[#FBEFE4] py-20 overflow-hidden">
+        <section id="what-we-do" className="relative bg-[#FBEFE4] py-20 overflow-hidden scroll-mt-20">
 
             <motion.img
                 src={halfPattern.src}
@@ -91,10 +92,8 @@ const WhatWeDoSection = () => {
                         </motion.div>
 
 
-                        <motion.a
-                            href="#"
-                            variants={fadeUp}
-                            custom={1}
+                        <Link
+                            href="/about-us"
                             className="group mt-8 inline-flex items-center gap-4"
                         >
                             <span className="relative text-sm font-semibold tracking-widest text-[#483028]">
@@ -124,7 +123,7 @@ const WhatWeDoSection = () => {
                                     <path d="M5 12h14M13 6l6 6-6 6" />
                                 </motion.svg>
                             </motion.span>
-                        </motion.a>
+                        </Link>
                     </motion.div>
 
 
