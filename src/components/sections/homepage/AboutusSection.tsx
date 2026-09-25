@@ -286,8 +286,7 @@ const AboutusSection = () => {
 
                             <img src={src(quote)} alt="" className="w-8 h-8 mb-3 relative z-10" />
                             <p className="relative z-10 font-serif italic text-lg text-dark-green leading-relaxed">
-                                The Best Of People Are Those Who Bring The Greatest Benefit To Others.
-                                Every Act Of Kindness Leaves A Lasting Impact.
+                                &ldquo;The Best Of People Are Those Who Bring The Greatest Benefit To Others.&rdquo;
                             </p>
                             <p className="relative z-10 mt-4 font-dancing-script text-dark-yellow text-2xl">
                                 — Prophet Muhammad (PBUH)

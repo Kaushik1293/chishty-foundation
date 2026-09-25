@@ -57,7 +57,7 @@ const GalleryHero = () => {
                         </motion.div>
 
                         <motion.div variants={fadeUp} className="mt-8 flex justify-center md:justify-start">
-                            <Link href="/donate">
+                            <Link href="/donation">
                                 <PrimaryButton
                                     containerClassName="!bg-dark-yellow shadow-md hover:shadow-xl transition-shadow duration-300"
                                     iconWrapperClassName="!bg-dark-green"

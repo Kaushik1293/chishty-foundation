@@ -135,6 +135,7 @@ interface DonationFormData {
   fullName: string;
   email: string;
   phone: string;
+  pan: string;
   address: string;
   city: string;
   country: string;
@@ -152,6 +153,7 @@ const DonationFormSection = () => {
     fullName: "",
     email: "",
     phone: "",
+    pan: "",
     address: "",
     city: "",
     country: "India",
@@ -238,6 +240,15 @@ const DonationFormSection = () => {
     }
   };
 
+  const handlePanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Trim whitespace and auto-convert to uppercase, max 10 characters
+    const cleanPan = e.target.value.toUpperCase().replace(/\s+/g, "").slice(0, 10);
+    setFormData((prev) => ({ ...prev, pan: cleanPan }));
+    if (errors.pan) {
+      setErrors((prev) => ({ ...prev, pan: undefined }));
+    }
+  };
+
   const handleInputChange = (field: keyof DonationFormData) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -273,6 +284,15 @@ const DonationFormSection = () => {
         selectedCountry.minLen === selectedCountry.maxLen
           ? `${selectedCountry.name} phone number must be ${selectedCountry.minLen} digits`
           : `${selectedCountry.name} phone number must be between ${selectedCountry.minLen} and ${selectedCountry.maxLen} digits`;
+    }
+
+    // Validate PAN format (5 uppercase letters, 4 digits, 1 uppercase letter)
+    const trimmedPan = formData.pan.trim().toUpperCase();
+    if (trimmedPan) {
+      const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+      if (!panPattern.test(trimmedPan)) {
+        newErrors.pan = "Please enter a valid 10-character Indian PAN (e.g. ABCDE1234F)";
+      }
     }
 
     setErrors(newErrors);
@@ -312,6 +332,7 @@ const DonationFormSection = () => {
               category: formData.category,
               donor_name: formData.fullName.trim(),
               donor_email: formData.email.trim(),
+              ...(formData.pan.trim() ? { donor_pan: formData.pan.trim().toUpperCase() } : {}),
             },
           });
 
@@ -388,6 +409,7 @@ const DonationFormSection = () => {
         full_name: formData.fullName.trim(),
         email: formData.email.trim(),
         phone: fullPhone,
+        pan: formData.pan.trim().toUpperCase() || undefined,
         address: formData.address.trim() || undefined,
         city: formData.city.trim() || undefined,
         country: formData.country.trim() || selectedCountry.name,
@@ -561,6 +583,12 @@ const DonationFormSection = () => {
         <span class="label">Phone</span>
         <span class="val">${formData.phone || "—"}</span>
       </div>
+      ${formData.pan ? `
+      <div class="cell">
+        <span class="label">Donor PAN (80G)</span>
+        <span class="val mono">${formData.pan}</span>
+      </div>
+      ` : ""}
       <div class="cell">
         <span class="label">Payment Mode</span>
         <span class="val">${formData.paymentMethod}</span>
@@ -703,6 +731,13 @@ const DonationFormSection = () => {
                         <span className="font-medium text-dark-green">{formData.phone || "—"}</span>
                       </div>
 
+                      {formData.pan && (
+                        <div>
+                          <span className="text-dark-green/60 block text-[11px]">Donor PAN (80G)</span>
+                          <span className="font-medium text-dark-green font-mono">{formData.pan}</span>
+                        </div>
+                      )}
+
                       <div>
                         <span className="text-dark-green/60 block text-[11px]">Payment Mode</span>
                         <span className="font-medium text-dark-green">{formData.paymentMethod}</span>
@@ -745,6 +780,7 @@ const DonationFormSection = () => {
                           fullName: "",
                           email: "",
                           phone: "",
+                          pan: "",
                           address: "",
                           city: "",
                           country: "India",
@@ -1037,6 +1073,38 @@ const DonationFormSection = () => {
                     </div>
                   </motion.div>
 
+                  {/* 6. PAN Field (Required for 80G Tax Exemption Certificate) */}
+                  <motion.div variants={fadeUp} className="mb-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-dark-green/70">
+                        PAN
+                      </label>
+                      <span className="text-[11px] font-medium text-dark-yellow bg-dark-yellow/10 px-2 py-0.5 rounded-full">
+                        Required for 80G Certificate
+                      </span>
+                    </div>
+                    <input
+                      type="text"
+                      maxLength={10}
+                      autoCapitalize="characters"
+                      autoComplete="off"
+                      spellCheck="false"
+                      placeholder="e.g. ABCDE1234F"
+                      value={formData.pan}
+                      onChange={handlePanChange}
+                      className={`${inputBaseClasses} font-mono uppercase tracking-wider ${
+                        errors.pan ? "border-red-400" : "border-transparent"
+                      }`}
+                    />
+                    {errors.pan ? (
+                      <p className="text-red-500 text-xs mt-1.5">{errors.pan}</p>
+                    ) : (
+                      <p className="text-dark-green/50 text-[11px] mt-1.5">
+                        Indian donors: Required under Section 80G of the Income Tax Act to receive a 50% tax exemption certificate.
+                      </p>
+                    )}
+                  </motion.div>
+
                   {/* 7. Continue to Payment Button */}
                   <motion.div variants={fadeUp}>
                     <button
@@ -1259,8 +1327,71 @@ const DonationFormSection = () => {
                   </button>
                 </div>
 
+                {/* Branch name verification note: "Kutchury Road" is preserved as listed in records; requires verification against official bank passbook/document to confirm if spelling is Kutchary Road. */}
                 <div className="text-[12px] text-dark-green/70 pt-1">
                   <strong>Branch Code / Address:</strong> Kutchury Road, Ajmer, Rajasthan
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Registrations & Compliance Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, ease: EASE, delay: 0.3 }}
+              className="bg-white rounded-3xl p-6 border border-[#F1E3D7] shadow-sm relative overflow-hidden"
+            >
+              <div className="flex items-center justify-between mb-4 border-b border-[#F2E7D6] pb-3">
+                <div>
+                  <span className="text-[11px] font-bold text-dark-yellow uppercase tracking-wider">
+                    Official Accreditations
+                  </span>
+                  <h4 className="font-cormorant font-bold text-xl text-dark-green">
+                    Registrations &amp; Compliance
+                  </h4>
+                </div>
+                <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold">
+                  Verified NGO
+                </span>
+              </div>
+
+              <div className="space-y-3 text-xs sm:text-sm">
+                <div className="flex justify-between items-center bg-beige p-2.5 rounded-xl border border-[#ECE2CB]">
+                  <div>
+                    <span className="text-dark-green/60 block text-[11px]">NITI Aayog (NGO Darpan)</span>
+                    <strong className="text-dark-green font-semibold tracking-wider">RJ/2017/0178972</strong>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy("RJ/2017/0178972", "niti-darpan")}
+                    className="flex items-center gap-1 text-dark-yellow hover:text-dark-green font-medium text-xs px-2 py-1 bg-white rounded-lg border border-[#ECE2CB] transition-colors cursor-pointer"
+                  >
+                    {copiedKey === "niti-darpan" ? <CheckIcon /> : <CopyIcon />}
+                    {copiedKey === "niti-darpan" ? "Copied" : "Copy"}
+                  </button>
+                </div>
+
+                <div className="bg-beige p-2.5 rounded-xl border border-[#ECE2CB]">
+                  <span className="text-dark-green/60 block text-[11px]">Section 12A (Income Tax Act)</span>
+                  <strong className="text-dark-green font-semibold">Registered Non-Profit Trust</strong>
+                  <span className="block text-[11px] text-dark-green/60 mt-0.5">Registration certificate under verification</span>
+                </div>
+
+                <div className="bg-beige p-2.5 rounded-xl border border-[#ECE2CB]">
+                  <span className="text-dark-green/60 block text-[11px]">Section 80G (Tax Exemption)</span>
+                  <strong className="text-dark-green font-semibold">50% Tax Relief Available</strong>
+                  <span className="block text-[11px] text-dark-green/60 mt-0.5">Registration certificate under verification (PAN required)</span>
+                </div>
+
+                <div className="bg-beige p-2.5 rounded-xl border border-[#ECE2CB]">
+                  <span className="text-dark-green/60 block text-[11px]">CSR-1 Registration (MCA)</span>
+                  <strong className="text-dark-green font-semibold">Eligible for Corporate CSR Grants</strong>
+                  <span className="block text-[11px] text-dark-green/60 mt-0.5">Registration number under verification</span>
+                </div>
+
+                <div className="text-[12px] text-dark-green/70 pt-1">
+                  <strong>Registered Office:</strong> Chishty Manzil Sufi Khanqah, Jhalra Street, Dargah Sharif, Ajmer Sharif — 305001, Rajasthan
                 </div>
               </div>
             </motion.div>

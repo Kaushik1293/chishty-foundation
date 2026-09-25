@@ -194,7 +194,7 @@ const AboutCTASection = () => {
                     </motion.p>
 
                     <div className="flex flex-wrap items-center gap-4 justify-center lg:justify-start">
-                        <Link href="/donate">
+                        <Link href="/donation">
                             <PrimaryButton
                                 containerClassName="!bg-[#EEAE46] shadow-md hover:shadow-xl transition-shadow duration-300"
                                 iconWrapperClassName="!bg-dark-green"

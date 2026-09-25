@@ -329,33 +329,72 @@ const Footer = () => {
                             viewport={{ once: true }}
                             className="space-y-5"
                         >
-                            {contactDetails.map((detail, i) => (
-                                <motion.li
-                                    key={detail.text}
-                                    variants={linkItem}
-                                    custom={i}
-                                    className="flex items-start gap-3"
+                            <motion.li variants={linkItem} custom={0} className="flex items-start gap-3">
+                                <img src={src(location)} alt="" className="w-5 h-5 mt-0.5 shrink-0" />
+                                <a
+                                    href="https://www.google.com/maps/search/?api=1&query=Chishty+Manzil+Sufi+Khanqah+Jhalra+Street+Dargah+Sharif+Ajmer+Sharif"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-white/80 text-[15px] leading-snug hover:text-dark-yellow transition-colors"
                                 >
-                                    <img src={src(detail.icon)} alt="" className="w-5 h-5 mt-0.5 shrink-0" />
-                                    {detail.href ? (
-                                        <a
-                                            href={detail.href}
-                                            target={detail.href.startsWith('http') ? '_blank' : undefined}
-                                            rel={detail.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                                            className="text-white/80 text-[15px] leading-snug hover:text-dark-yellow transition-colors"
-                                        >
-                                            {detail.text}
-                                        </a>
-                                    ) : (
-                                        <span className="text-white/80 text-[15px] leading-snug">
-                                            {detail.text}
-                                        </span>
-                                    )}
-                                </motion.li>
-                            ))}
+                                    Chishty Manzil Sufi Khanqah, Jhalra Street, Dargah Sharif, Ajmer Sharif — 305001, Rajasthan, India
+                                </a>
+                            </motion.li>
+
+                            <motion.li variants={linkItem} custom={1} className="flex items-start gap-3">
+                                <img src={src(phone)} alt="" className="w-5 h-5 mt-0.5 shrink-0" />
+                                <div className="text-white/80 text-[15px] leading-snug flex flex-wrap gap-x-2">
+                                    <a href="tel:+911452429473" className="hover:text-dark-yellow transition-colors">
+                                        +91 145 2429473
+                                    </a>
+                                    <span>·</span>
+                                    <a href="tel:+911452944973" className="hover:text-dark-yellow transition-colors">
+                                        +91 145 2944973
+                                    </a>
+                                </div>
+                            </motion.li>
+
+                            <motion.li variants={linkItem} custom={2} className="flex items-start gap-3">
+                                <img src={src(email)} alt="" className="w-5 h-5 mt-0.5 shrink-0" />
+                                <div className="text-white/80 text-[15px] leading-snug flex flex-col gap-1">
+                                    <a href="mailto:chairman@chishtyfoundation.org" className="hover:text-dark-yellow transition-colors break-all">
+                                        chairman@chishtyfoundation.org
+                                    </a>
+                                    <a href="mailto:services@chishtyfoundation.org" className="hover:text-dark-yellow transition-colors break-all">
+                                        services@chishtyfoundation.org
+                                    </a>
+                                </div>
+                            </motion.li>
+
+                            <motion.li variants={linkItem} custom={3} className="flex items-start gap-3">
+                                <img src={src(web)} alt="" className="w-5 h-5 mt-0.5 shrink-0" />
+                                <a
+                                    href="https://chishtyfoundation.org"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-white/80 text-[15px] leading-snug hover:text-dark-yellow transition-colors"
+                                >
+                                    chishtyfoundation.org
+                                </a>
+                            </motion.li>
                         </motion.ul>
                     </motion.div>
                 </motion.div>
+
+                {/* Registrations / Compliance Banner in Footer */}
+                <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/60">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-white/80 font-medium">Compliance &amp; Accreditation:</span>
+                        <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-dark-yellow font-mono font-medium">
+                            NITI Aayog: RJ/2017/0178972
+                        </span>
+                        <span className="hidden md:inline text-white/20">|</span>
+                        <span className="text-white/70">12A &amp; 80G Eligible Non-Profit Trust</span>
+                    </div>
+                    <span className="text-white/50 text-[11px]">
+                        Registered Sufi Charitable Trust, Ajmer Sharif
+                    </span>
+                </div>
             </div>
 
             <div className="bg-[#012420]">

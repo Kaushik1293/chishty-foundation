@@ -3,17 +3,72 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { CauseRecord } from "@/app/(asgard)/asgard/causes/actions";
+import { DefaultCause } from "@/src/data/defaultCauses";
 
 interface CauseCardProps {
-  cause: CauseRecord;
+  cause: CauseRecord | DefaultCause;
   index: number;
 }
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
+/**
+ * Derives a clear, meaningful title from the existing cause content
+ * without inventing new claims or programs.
+ */
+function deriveCauseTitle(cause: { title?: string; description?: string | null }): string {
+  const customTitle = (cause as { title?: string }).title;
+  if (customTitle && typeof customTitle === "string" && customTitle.trim()) {
+    return customTitle.trim();
+  }
+
+  const desc = (cause.description || "").toLowerCase();
+
+  if (desc.includes("interfaith") || desc.includes("faiths") || desc.includes("dialogue")) {
+    return "Interfaith Harmony";
+  }
+  if (desc.includes("sewa") || desc.includes("selfless service") || desc.includes("no expectation of return")) {
+    return "Sewa — Selfless Service";
+  }
+  if (desc.includes("education") || desc.includes("child") || desc.includes("school") || desc.includes("learn")) {
+    return "Child Education";
+  }
+  if (desc.includes("sufism") || desc.includes("sufi") || desc.includes("purity of heart") || desc.includes("khwaja")) {
+    return "The Path of Sufism";
+  }
+  if (desc.includes("community") || desc.includes("underprivileged") || desc.includes("upliftment")) {
+    return "Community Upliftment";
+  }
+  if (desc.includes("hunger") || desc.includes("langar") || desc.includes("ration") || desc.includes("meal")) {
+    return "Hunger Relief & Langar";
+  }
+  if (desc.includes("health") || desc.includes("medical") || desc.includes("doctor")) {
+    return "Healthcare & Medical Aid";
+  }
+  if (desc.includes("women") || desc.includes("vocational") || desc.includes("livelihood")) {
+    return "Women Empowerment & Livelihood";
+  }
+  if (desc.includes("environment") || desc.includes("tree") || desc.includes("clean-water")) {
+    return "Environment & Sustainability";
+  }
+
+  // Fallback: extract the first clause (up to 4 words) from the description
+  const cleanFirst = (cause.description || "").replace(/I prefer this response[.]?/gi, "").trim();
+  const firstSentence = cleanFirst.split(/[.,!?;]/)[0]?.trim();
+  if (firstSentence) {
+    const words = firstSentence.split(/\s+/).slice(0, 4).join(" ");
+    if (words.length > 2) return words;
+  }
+
+  return "Humanitarian Cause";
+}
+
 export default function CauseCard({ cause, index }: CauseCardProps) {
-  const causeTitle = (cause as any).title || null;
-  const cleanDescription = (cause.description || "").replace(/I prefer this response/gi, "").trim();
+  const causeTitle = deriveCauseTitle(cause);
+  // Remove AI leftover text completely
+  const cleanDescription = (cause.description || "")
+    .replace(/I prefer this response[.]?/gi, "")
+    .trim();
 
   return (
     <motion.div
@@ -27,7 +82,7 @@ export default function CauseCard({ cause, index }: CauseCardProps) {
         {cause.image ? (
           <img
             src={cause.image}
-            alt={causeTitle || "Campaign"}
+            alt={causeTitle}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
           />
         ) : (
@@ -41,12 +96,10 @@ export default function CauseCard({ cause, index }: CauseCardProps) {
       </div>
 
       <div className="w-[90%] bg-white/95 backdrop-blur-md -mt-16 relative z-10 p-6 md:p-8 rounded-3xl shadow-[0_20px_40px_rgba(13,39,80,0.06)] border border-white group-hover:-translate-y-3 transition-transform duration-500 ease-out flex-1 flex flex-col">
-        <div className="w-12 h-1.5 bg-linear-to-r from-dark-yellow to-rust-orange mb-4 rounded-full" />
-        {causeTitle && (
-          <h3 className="font-cormorant font-bold text-2xl text-dark-green mb-3">
-            {causeTitle}
-          </h3>
-        )}
+        <div className="w-12 h-1.5 bg-gradient-to-r from-dark-yellow to-rust-orange mb-4 rounded-full" />
+        <h3 className="font-cormorant font-bold text-2xl text-dark-green mb-3">
+          {causeTitle}
+        </h3>
         <p className="text-dark-green/80 text-[15px] leading-relaxed flex-1">
           {cleanDescription}
         </p>

@@ -244,7 +244,7 @@ const CTASection = () => {
                                     transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
                                 />
                                 <MagneticLink
-                                    href="/contact"
+                                    href="/donation"
                                     strength={0.15}
                                     style={{ backgroundColor: DARK_GREEN }}
                                     className="group relative flex items-center gap-3 rounded-2xl shadow-xl pl-3 pr-6 py-2.5 overflow-hidden"

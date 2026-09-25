@@ -2,11 +2,11 @@ import React from 'react';
 import AboutCTASection from '../components/about/AboutCTASection';
 import CauseHeroSection from '../components/causes/CauseHeroSection';
 import CauseCard from '../components/causes/CauseCard';
-import { getCauses } from '@/app/(asgard)/asgard/causes/actions';
+import { CauseRecord, getCauses } from '@/app/(asgard)/asgard/causes/actions';
 import { defaultCauses } from '@/src/data/defaultCauses';
 
 export default async function CausesContainer() {
-  let causes: any[] = [];
+  let causes: CauseRecord[] = [];
   try {
     causes = await getCauses({ isActiveOnly: true });
   } catch (e) {

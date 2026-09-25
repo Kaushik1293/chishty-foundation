@@ -250,6 +250,7 @@ export interface DonationRecord {
   full_name: string;
   email: string;
   phone: string;
+  pan?: string;
   address?: string;
   city?: string;
   country?: string;

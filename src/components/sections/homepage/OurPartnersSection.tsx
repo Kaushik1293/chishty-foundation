@@ -46,7 +46,7 @@ const PartnerRow = ({
 }: {
     title: string;
     highlight: string;
-    items: { name: string; logo: any }[];
+    items: PartnerItem[];
 }) => {
     const swiperRef = useRef<SwiperType | null>(null);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -120,13 +120,24 @@ const PartnerRow = ({
                                         whileHover={{ scale: 1.08 }}
                                         className="relative h-20 w-20 flex items-center justify-center"
                                     >
-                                        <Image
-                                            src={partner.logo}
-                                            alt={partner.name}
-                                            fill
-                                            className="object-contain"
-                                            sizes="80px"
-                                        />
+                                        {partner.logo ? (
+                                            <Image
+                                                src={partner.logo}
+                                                alt={partner.name}
+                                                fill
+                                                className="object-contain"
+                                                sizes="80px"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full rounded-full bg-beige border border-dark-yellow/30 flex flex-col items-center justify-center text-center p-1.5 shadow-inner">
+                                                <span className="font-cormorant font-bold text-xl text-dark-green tracking-widest">
+                                                    {partner.initials || partner.name.slice(0, 3).toUpperCase()}
+                                                </span>
+                                                <span className="text-[9px] text-dark-yellow font-medium uppercase tracking-wider">
+                                                    Initiative
+                                                </span>
+                                            </div>
+                                        )}
                                     </motion.div>
                                 </div>
                             </div>

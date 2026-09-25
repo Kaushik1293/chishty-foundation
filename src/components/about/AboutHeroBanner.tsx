@@ -90,7 +90,7 @@ const AboutHeroBanner = () => {
                         </motion.p>
 
                         <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-8">
-                            <Link href="/contact">
+                            <Link href="/donation">
                                 <PrimaryButton text="Donate Now" icon={<HeartIcon />} />
                             </Link>
 
