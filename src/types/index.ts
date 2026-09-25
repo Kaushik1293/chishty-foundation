@@ -46,5 +46,3 @@ export interface IMediaItem {
   created_at?: string;
   updated_at?: string;
 }
-
-export * from './social';

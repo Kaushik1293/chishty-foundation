@@ -538,17 +538,4 @@ export async function recordOfflineDonation(data: {
     console.error("Error recording offline donation:", err);
     return { success: false, error: err.message };
   }
-}
-
-// -------------------------------------------------------------
-// SOCIAL MEDIA FEEDS (INSTAGRAM & X)
-// -------------------------------------------------------------
-export async function getInstagramPosts() {
-  const { getLatestInstagramPosts } = await import('@/src/services/social/socialMediaService');
-  return getLatestInstagramPosts();
-}
-
-export async function getXPosts() {
-  const { getLatestXPosts } = await import('@/src/services/social/socialMediaService');
-  return getLatestXPosts();
 }
